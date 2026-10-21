@@ -1,56 +1,62 @@
-# Welcome to your Expo app 👋
+# Hisaab
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A money organizer for Pakistan: track spending, set budgets, keep udhaar records, save for goals and calculate zakat. English and Urdu, works fully offline, no sign-up.
 
-## Get started
+Built with Expo (SDK 58), Expo Router and an encrypted SQLite database (SQLCipher). Android first.
 
-1. Install dependencies
+## What is in v1.0
 
-   ```bash
-   npm install
-   ```
+| Area | Features | FRs |
+|---|---|---|
+| Onboarding | Guest use, profile type with matching categories, English/Urdu, currency, month start (salary) day | 01, 03–06 |
+| Accounts | Cash, bank, wallet, card; opening balance and correction; transfers; total and per-account balance; hide balances | 08–12 |
+| Transactions | Add/edit/delete income, expense, transfer; search and filters; recurring (daily/weekly/monthly); paste a bank SMS to fill the amount | 13–16 |
+| Categories | Defaults per profile, custom categories and subcategories with icon and color, edit, delete (archives if used) | 22–24 |
+| Budget | Monthly budget, category limits, safe-to-spend today, progress bars, 80% and 100% alerts | 25, 26, 29–31 |
+| Udhaar | Money given/taken, partial repayments, to receive / to pay totals, due-date reminders, WhatsApp reminder message | 43–47 |
+| Goals | Savings goals with templates (Umrah, Hajj, shaadi, education, laptop, bike, emergency fund), progress, monthly amount needed, emergency fund recommendation | 54–57 |
+| Reports | Monthly summary, category donut, 6-month bars, comparison with last month, insights, net worth, CSV export, share summary | 58–63 |
+| Reminders | Bill due reminders, daily "log expenses" reminder, monthly summary reminder, each one on/off | 65–68 |
+| Islamic | Zakat calculator (silver or gold nisab), sadqa/charity total for the year | 75, 76 |
+| Security and data | PIN lock with fingerprint, encrypted database, backup file and restore, CSV export, delete all data | 77–81 |
+| Settings | Dark mode, large text, privacy note, feedback (when a support email is set) | 82, 83 |
 
-2. Start the app
+Planned for later releases: group bills, committee (BC), shopkeeper khata, multi-currency, sign-in and sync, family sharing, SMS auto-read, voice input, admin tools. See the phased plan in the project files.
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run it
 
 ```bash
-npm run reset-project
+npm install
+npx expo start          # scan the QR code with a development build, or press w for the web preview
+npm test                # unit tests for the money logic
+npm run typecheck
+npm run lint
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+SQLCipher, notifications and biometrics are native modules, so the Android app needs a development or preview build rather than Expo Go:
 
-### Other setup steps
+```bash
+npx eas-cli@latest login
+npx eas-cli@latest build --profile preview --platform android      # installable APK for testing
+npx eas-cli@latest build --profile production --platform android   # .aab for Google Play
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Project layout
 
-## Learn more
+```
+src/app/        screens (Expo Router; every file is a route)
+src/lib/        pure money logic with unit tests (budgets, periods, udhaar, zakat, reports, SMS parsing)
+src/db/         SQLite schema, migrations, queries, default categories, encryption key
+src/services/   notifications, budget alerts, backup/export, app lock
+src/state/      app settings, translations hook, startup gate
+src/i18n/       English and Urdu strings
+src/ui/         shared components (kit, charts, lock screen)
+docs/           privacy policy and Play Store listing drafts
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Notes
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Amounts are stored as integer paisa; dates as local `YYYY-MM-DD` strings.
+- The database key is random per install and kept in the Android Keystore. Android auto-backup is off, because a restored database could not be opened without that key. Users back up with the in-app backup file instead.
+- Urdu right-to-left layout comes from the in-app language setting, not the phone language, so the app never flips unexpectedly.
+- The app requests no SMS, contacts, location, camera or microphone permissions.
