@@ -76,6 +76,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "owner": "manahil_fatima72",
+    "extra": {
+      "eas": {
+        "projectId": "b34fffed-462d-4af0-bf74-0e9aef9c767f"
+      }
     }
   }
 }
