@@ -1,16 +1,63 @@
 // All amounts are stored as integer minor units (paisa) to avoid float rounding.
 
-export const CURRENCIES = ['PKR', 'USD', 'AED', 'SAR', 'GBP', 'EUR'] as const;
+export const CURRENCIES = [
+  'USD',
+  'EUR',
+  'GBP',
+  'PKR',
+  'INR',
+  'BDT',
+  'NPR',
+  'LKR',
+  'AED',
+  'SAR',
+  'QAR',
+  'KWD',
+  'OMR',
+  'BHD',
+  'CAD',
+  'AUD',
+  'NZD',
+  'SGD',
+  'MYR',
+  'IDR',
+  'PHP',
+  'TRY',
+  'EGP',
+  'NGN',
+  'KES',
+  'ZAR',
+  'JPY',
+  'CNY',
+] as const;
 export type Currency = (typeof CURRENCIES)[number];
 
 const SYMBOLS: Record<string, string> = {
-  PKR: 'Rs',
   USD: '$',
-  AED: 'AED',
-  SAR: 'SAR',
-  GBP: '£',
   EUR: '€',
+  GBP: '£',
+  PKR: 'Rs',
+  INR: '₹',
+  BDT: '৳',
+  NPR: 'Rs',
+  LKR: 'Rs',
+  PHP: '₱',
+  TRY: '₺',
+  NGN: '₦',
+  JPY: '¥',
+  CNY: '¥',
+  CAD: 'CA$',
+  AUD: 'A$',
+  NZD: 'NZ$',
+  SGD: 'S$',
+  MYR: 'RM',
+  IDR: 'Rp',
+  KES: 'KSh',
+  ZAR: 'R',
 };
+
+/** Currencies written with lakh grouping: 1,00,000. */
+const SOUTH_ASIAN = new Set(['PKR', 'INR', 'NPR', 'BDT']);
 
 export function toMinor(major: number): number {
   return Math.round(major * 100);
@@ -22,13 +69,13 @@ export function toMajor(minor: number): number {
 
 /** Parses user input like "1,250.50" or "1250" into minor units. Returns null for invalid input. */
 export function parseAmount(input: string): number | null {
-  const cleaned = input.replace(/[,\s]/g, '').replace(/^(rs\.?|pkr)/i, '');
+  const cleaned = input.replace(/[,\s]/g, '').replace(/^(rs\.?|pkr|inr|usd|\$|€|£|₹)/i, '');
   if (!/^\d+(\.\d{0,2})?$/.test(cleaned)) return null;
   const value = Math.round(parseFloat(cleaned) * 100);
   return value > 0 ? value : null;
 }
 
-/** Groups digits the way they are usually written in Pakistan: 1,00,000 for one lakh. */
+/** Groups digits the way they are usually written in South Asia: 1,00,000 for one lakh. */
 function groupSouthAsian(intPart: string): string {
   if (intPart.length <= 3) return intPart;
   const last3 = intPart.slice(-3);
@@ -45,17 +92,19 @@ export function formatMoney(
   currency: string = 'PKR',
   opts: { hidden?: boolean; showSign?: boolean; decimals?: boolean } = {},
 ): string {
+  // "$12" and "€12" sit tight; letter symbols get a space: "Rs 12", "AED 12".
   const symbol = SYMBOLS[currency] ?? currency;
-  if (opts.hidden) return `${symbol} ••••`;
+  const prefix = /^[^A-Za-z]$|\$$/.test(symbol) ? symbol : `${symbol} `;
+  if (opts.hidden) return `${prefix}••••`;
   const negative = minor < 0;
   const abs = Math.abs(minor);
   const whole = Math.floor(abs / 100).toString();
   const frac = abs % 100;
-  const grouped = currency === 'PKR' ? groupSouthAsian(whole) : groupWestern(whole);
+  const grouped = SOUTH_ASIAN.has(currency) ? groupSouthAsian(whole) : groupWestern(whole);
   const showDecimals = opts.decimals ?? frac !== 0;
   const body = showDecimals ? `${grouped}.${frac.toString().padStart(2, '0')}` : grouped;
   const sign = negative ? '-' : opts.showSign && minor > 0 ? '+' : '';
-  return `${sign}${symbol} ${body}`;
+  return `${sign}${prefix}${body}`;
 }
 
 /** Splits an amount into n parts that add back to the exact total (remainder paisa go to the first parts). */

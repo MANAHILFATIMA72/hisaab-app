@@ -7,8 +7,11 @@ import { bannerUnitId, getAdsState, subscribeAds } from '@/services/ads';
 import { useApp } from '@/state/app';
 import { Text } from '@/ui/kit';
 
-/** A small banner pinned under a screen's content. Hidden until consent is done, and if no ad loads. */
-export function AdBanner() {
+/**
+ * A small banner pinned under a screen's content. Hidden until consent is done, and if no ad loads.
+ * `collapsible` asks Google for a collapsible banner: it opens larger once, then folds down to a normal banner.
+ */
+export function AdBanner({ collapsible }: { collapsible?: boolean }) {
   const { colors } = useApp();
   const { ready } = useSyncExternalStore(subscribeAds, getAdsState);
   const [failed, setFailed] = useState(false);
@@ -18,6 +21,7 @@ export function AdBanner() {
       <BannerAd
         unitId={bannerUnitId()}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+        requestOptions={collapsible ? { networkExtras: { collapsible: 'bottom' } } : undefined}
         onAdFailedToLoad={(e) => {
           console.log('[ads] banner failed', String(e));
           setFailed(true);

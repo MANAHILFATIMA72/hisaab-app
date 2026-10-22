@@ -24,8 +24,13 @@ describe('money', () => {
     expect(formatMoney(10000000, 'PKR')).toBe('Rs 1,00,000');
     expect(formatMoney(123456789, 'PKR')).toBe('Rs 12,34,567.89');
     expect(formatMoney(-50000, 'PKR')).toBe('-Rs 500');
-    expect(formatMoney(10000000, 'USD')).toBe('$ 100,000');
+    expect(formatMoney(10000000, 'USD')).toBe('$100,000');
     expect(formatMoney(500, 'PKR', { hidden: true })).toBe('Rs ••••');
+    expect(formatMoney(123456, 'USD')).toBe('$1,234.56');
+    expect(formatMoney(-50000, 'EUR')).toBe('-€500');
+    expect(formatMoney(10000000, 'INR')).toBe('₹1,00,000');
+    expect(formatMoney(150000, 'AED')).toBe('AED 1,500');
+    expect(formatMoney(150000, 'CAD')).toBe('CA$1,500');
   });
 
   it('splits without losing paisa', () => {

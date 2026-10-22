@@ -252,7 +252,7 @@ export default function Home() {
         </Screen>
         <Fab label={t('tx.add')} onPress={() => router.push('/tx/new')} />
       </View>
-      <AdBanner />
+      <AdBanner collapsible />
     </View>
   );
 }

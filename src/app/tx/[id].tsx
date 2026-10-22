@@ -151,7 +151,7 @@ export default function TransactionScreen() {
 }
 
 function Editor({ data, isNew, initialType }: { data: Loaded; isNew: boolean; initialType: TxType }) {
-  const { db, t, colors, changed, period, settings, date: fmtDate } = useApp();
+  const { db, t, colors, changed, period, settings, date: fmtDate, money } = useApp();
   const tx = data.tx;
   const hasParts = data.parts.length > 1;
   const firstSms = data.smsText ? parseSms(data.smsText) : null;
@@ -440,8 +440,8 @@ function Editor({ data, isNew, initialType }: { data: Loaded; isNew: boolean; in
             sms.bank && `${t('tx.smsBank')}: ${sms.bank}${sms.last4 ? ` ••${sms.last4}` : ''}`,
             sms.merchant && `${sms.type === 'income' ? t('tx.smsFrom') : t('tx.smsAt')}: ${sms.merchant}`,
             `${t('common.date')}: ${sms.date ? fmtDate(sms.date) : t('tx.smsNoDate')}${sms.time ? `, ${sms.time}` : ''}`,
-            sms.balance !== null && t('tx.smsBalance', { amount: String(toMajor(sms.balance)) }),
-            sms.fee ? t('tx.smsFee', { amount: String(toMajor(sms.fee)) }) : null,
+            sms.balance !== null && t('tx.smsBalance', { amount: money(sms.balance) }),
+            sms.fee ? t('tx.smsFee', { amount: money(sms.fee) }) : null,
             sms.reference && `${t('tx.smsRef')}: ${sms.reference}`,
             sms.kind === 'withdrawal' && t('tx.smsWithdrawal'),
           ]
@@ -630,7 +630,7 @@ function Editor({ data, isNew, initialType }: { data: Loaded; isNew: boolean; in
                       setParts(parts.map((x) => (x.key === target.key ? { ...x, amount: String(toMajor(left)) } : x)));
                   }}>
                   <Text variant="caption" color={total - partsSum === 0 ? colors.income : colors.warning}>
-                    {t('tx.splitRemaining', { amount: String(toMajor(total - partsSum)) })}
+                    {t('tx.splitRemaining', { amount: money(total - partsSum) })}
                   </Text>
                 </Pressable>
               </Row>

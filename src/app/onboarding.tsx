@@ -26,7 +26,7 @@ export default function Onboarding() {
   const { db, t, colors, settings, setSetting, changed } = useApp();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<ProfileType | null>(null);
-  const [currency, setCurrency] = useState('PKR');
+  const [currency, setCurrency] = useState(settings.currency);
   const [startDay, setStartDay] = useState(1);
   const [busy, setBusy] = useState(false);
 

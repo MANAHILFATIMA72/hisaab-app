@@ -1,4 +1,4 @@
-export function AdBanner() {
+export function AdBanner(_props: { collapsible?: boolean }) {
   return null;
 }
 

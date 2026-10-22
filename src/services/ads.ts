@@ -1,6 +1,8 @@
 // Google AdMob: consent (UMP) first, then the SDK. Banners wait for this before loading.
+import { AppState } from 'react-native';
 import mobileAds, {
   AdEventType,
+  AppOpenAd,
   AdsConsent,
   InterstitialAd,
   AdsConsentPrivacyOptionsRequirementStatus,
@@ -63,6 +65,7 @@ export function prepareAds() {
       console.log('[ads] ready, test ads:', testing);
       set({ ready: true });
       loadInterstitial();
+      startAppOpenAds();
     } catch (e) {
       // No ads is fine: the app works the same without them. Try again next time.
       console.log('[ads] start failed', String(e));
@@ -82,7 +85,7 @@ export async function showAdPrivacyOptions() {
 const INTERSTITIAL_GAP_MS = 2 * 60 * 1000; // at most one every 2 minutes
 let interstitial: InterstitialAd | null = null;
 let interstitialLoaded = false;
-let lastInterstitial = 0;
+let lastInterstitial = 0; // also set by the app open ad, so two full-screen ads never come close together
 
 function loadInterstitial() {
   if (!state.ready || interstitial) return;
@@ -121,5 +124,62 @@ export function showInterstitial(): Promise<void> {
     const offClosed = ad.addAdEventListener(AdEventType.CLOSED, finish);
     const offError = ad.addAdEventListener(AdEventType.ERROR, finish);
     ad.show().catch(finish);
+  });
+}
+
+// ---------- App open ad (full screen, when someone returns to the app) ----------
+
+const APP_OPEN_AWAY_MS = 30 * 1000; // ignore quick trips to the share sheet, camera or SMS app
+const APP_OPEN_MAX_AGE_MS = 4 * 60 * 60 * 1000; // Google expires app open ads after 4 hours
+let appOpen: AppOpenAd | null = null;
+let appOpenLoadedAt = 0;
+let wentAway = 0;
+let appOpenStarted = false;
+
+const appOpenUnitId = () => (testing ? TestIds.APP_OPEN : AD_UNITS.appOpen);
+
+function loadAppOpen() {
+  if (!appOpenUnitId() || appOpen) return;
+  const ad = AppOpenAd.createForAdRequest(appOpenUnitId());
+  appOpen = ad;
+  appOpenLoadedAt = 0;
+  ad.addAdEventListener(AdEventType.LOADED, () => {
+    appOpenLoadedAt = Date.now();
+  });
+  ad.addAdEventListener(AdEventType.ERROR, (e) => {
+    console.log('[ads] app open failed', String(e));
+    if (appOpen === ad) appOpen = null;
+  });
+  ad.addAdEventListener(AdEventType.CLOSED, () => {
+    if (appOpen === ad) appOpen = null;
+    loadAppOpen();
+  });
+  ad.load();
+}
+
+function startAppOpenAds() {
+  if (appOpenStarted || !appOpenUnitId()) return;
+  appOpenStarted = true;
+  loadAppOpen();
+  AppState.addEventListener('change', (next) => {
+    if (next === 'background') {
+      wentAway = Date.now();
+      return;
+    }
+    if (next !== 'active' || !wentAway) return;
+    const away = Date.now() - wentAway;
+    wentAway = 0;
+    const ad = appOpen;
+    if (!ad || !appOpenLoadedAt) return loadAppOpen();
+    if (Date.now() - appOpenLoadedAt > APP_OPEN_MAX_AGE_MS) {
+      appOpen = null;
+      return loadAppOpen();
+    }
+    if (away < APP_OPEN_AWAY_MS || Date.now() - lastInterstitial < INTERSTITIAL_GAP_MS) return;
+    lastInterstitial = Date.now();
+    ad.show().catch(() => {
+      if (appOpen === ad) appOpen = null;
+      loadAppOpen();
+    });
   });
 }

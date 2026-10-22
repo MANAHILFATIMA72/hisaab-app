@@ -7,6 +7,7 @@ import { getSettings, setSetting as writeSetting } from '@/db/repo';
 import { formatDate, makeT, type Lang, type TFunction } from '@/i18n';
 import { periodContaining, today, type Period } from '@/lib/dates';
 import { formatMoney } from '@/lib/money';
+import { deviceCurrency, deviceLang } from '@/lib/locale';
 import type { ProfileType } from '@/lib/types';
 
 export type Settings = {
@@ -35,9 +36,9 @@ export type Settings = {
 
 const DEFAULTS: Settings = {
   onboarded: false,
-  lang: 'en',
+  lang: deviceLang(),
   profile: 'employee',
-  currency: 'PKR',
+  currency: deviceCurrency(),
   monthStartDay: 1,
   theme: 'system',
   largeText: false,

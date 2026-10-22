@@ -2,26 +2,26 @@
 
 ## Store listing
 
-**App name (30 chars max):** Hisaab: Budget & Udhaar Khata
+**App name (30 chars max):** Hisaab: Expense & Budget
 
 **Short description (80 chars max)**
 
-- EN: Track kharcha, set budgets, keep udhaar records and calculate zakat. Offline.
+- EN: Track expenses, set budgets, split bills and remember who owes you. Offline.
 - UR: خرچ لکھیں، بجٹ بنائیں، اُدھار کا حساب رکھیں اور زکوٰۃ نکالیں۔ آف لائن۔
 
 **Full description (EN)**
 
-Hisaab is a simple money organizer made for Pakistan. Write down every rupee in seconds, see how much you can safely spend today, and never forget who owes you money.
+Hisaab is a simple, private money organizer that works in your own currency. Write down every expense in seconds, see how much you can safely spend today, and never forget who owes you money.
 
 • Safe to spend today: tells you how much you can spend each day so the month does not run out before salary day.
 • Budgets that fit your month: start your month on your salary day. Set a total budget and category limits, and get an alert at 80% and 100%.
-• Udhaar record: note money you lent or borrowed, record part payments, and send a polite WhatsApp reminder in one tap.
-• Savings goals: Umrah, Hajj, shaadi, laptop, emergency fund. See how much to save each month.
-• Zakat calculator: with silver or gold nisab, filled from your own balances. Sadqa and charity tracking too.
+• Debts: note money you lent or borrowed, record part payments, and send a polite WhatsApp reminder in one tap.
+• Savings goals: travel, wedding, laptop, Umrah or Hajj, emergency fund. See how much to save each month.
+• Zakat calculator: with silver or gold nisab, filled from your own balances. Charity tracking too.
 • Reports: monthly summary, spending by category, last 6 months and simple insights like "Food is 30% higher than last month".
-• Paste bank SMS: copy a bank or JazzCash/Easypaisa message and Hisaab fills in the amount.
+• Paste bank SMS: copy a bank or mobile wallet message and Hisaab fills in the amount.
 • Cash, bank, mobile wallet and card accounts, transfers and recurring bills.
-• English and Urdu, dark mode, large text.
+• 28 currencies (USD, EUR, GBP, INR, PKR, AED, SAR and more), English and Urdu, dark mode, large text.
 • Private by design: no sign-up, works offline, data is encrypted on your phone. PIN and fingerprint lock.
 
 Made for students, salaried people, households, freelancers and shopkeepers.
