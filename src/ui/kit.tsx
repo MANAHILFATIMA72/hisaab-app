@@ -565,12 +565,12 @@ export function ListRow({
   const body = (
     <Row style={{ paddingVertical: Spacing.two + 2 }} gap={Spacing.three}>
       {left ?? (icon ? <Ionicons name={icon} size={22} color={colors.primary} /> : null)}
-      <View style={{ flex: 1 }}>
-        <Text variant="label" numberOfLines={1}>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text variant="label" numberOfLines={2}>
           {title}
         </Text>
         {subtitle ? (
-          <Text variant="caption" muted numberOfLines={2}>
+          <Text variant="caption" muted numberOfLines={3}>
             {subtitle}
           </Text>
         ) : null}

@@ -8,6 +8,7 @@ import { Card, Divider, ListRow, Screen, type IconName } from '@/ui/kit';
 const ITEMS: { href: Href; label: TKey; icon: IconName }[] = [
   { href: '/goals', label: 'more.goals', icon: 'flag' },
   { href: '/reports', label: 'more.reports', icon: 'bar-chart' },
+  { href: '/statement', label: 'statement.title', icon: 'document-text' },
   { href: '/zakat', label: 'more.zakat', icon: 'moon' },
   { href: '/accounts', label: 'more.accounts', icon: 'wallet' },
   { href: '/categories', label: 'more.categories', icon: 'pricetags' },

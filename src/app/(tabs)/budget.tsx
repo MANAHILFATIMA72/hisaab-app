@@ -197,7 +197,9 @@ export default function BudgetScreen() {
       {rule && (
         <Card>
           <Row style={{ justifyContent: 'space-between' }}>
-            <Text variant="label">{t('budget.ruleTitle')}</Text>
+            <Text variant="label" style={{ flex: 1 }}>
+              {t('budget.ruleTitle')}
+            </Text>
             <Button kind="ghost" title={t('common.remove')} onPress={() => setSetting('ruleIncome', '')} />
           </Row>
           <RuleRow label={t('budget.needs')} spent={data.needsSpent} target={rule.needs} />
@@ -300,15 +302,13 @@ function RuleRow({ label, spent, target }: { label: string; spent: number; targe
   const { t, money, colors } = useApp();
   return (
     <View style={{ gap: Spacing.one }}>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="caption">{label}</Text>
-        <Text variant="caption" muted>
-          {t('budget.spentOf', {
-            spent: money(spent, { ignoreHidden: true }),
-            limit: money(target, { ignoreHidden: true }),
-          })}
-        </Text>
-      </Row>
+      <Text variant="caption">{label}</Text>
+      <Text variant="caption" muted>
+        {t('budget.spentOf', {
+          spent: money(spent, { ignoreHidden: true }),
+          limit: money(target, { ignoreHidden: true }),
+        })}
+      </Text>
       <ProgressBar value={progress(spent, target)} color={spent > target ? colors.danger : colors.primary} />
     </View>
   );

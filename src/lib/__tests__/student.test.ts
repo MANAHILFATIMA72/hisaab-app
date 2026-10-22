@@ -4,6 +4,7 @@ import { dailyAllowanceBudget, fiftyThirtyTwenty, rolloverAmount, roundUpFriendl
 import { guessCategoryKeys, pickCategory } from '../categorize';
 import { computeShares, memberBalances, simplifyDebts, splitByWeight } from '../groups';
 import { findDate, findTime, parseSms } from '../sms-parse';
+import { buildStatement } from '../statement';
 
 describe('sms parsing', () => {
   it('reads an HBL debit card charge fully', () => {
@@ -195,5 +196,65 @@ describe('budget helpers', () => {
     expect(dailyAllowanceBudget(500_00, { start: '2026-10-01', end: '2026-10-31' })).toBe(15500_00);
     expect(rolloverAmount(10000_00, 8000_00)).toBe(2000_00);
     expect(rolloverAmount(10000_00, 12000_00)).toBe(0);
+  });
+});
+
+describe('statement', () => {
+  const acc = (id: string, opening = 0) => ({
+    id,
+    name: id,
+    type: 'cash' as const,
+    opening_balance: opening,
+    archived: 0,
+    sort: 0,
+  });
+  const tx = (o: Partial<import('../types').Transaction>) =>
+    ({
+      id: Math.random().toString(),
+      type: 'expense',
+      amount: 0,
+      account_id: 'cash',
+      to_account_id: null,
+      category_id: null,
+      date: '2026-10-01',
+      note: '',
+      recurring_id: null,
+      created_at: 0,
+      time: null,
+      tags: '',
+      receipt: null,
+      split_id: null,
+      group_expense_id: null,
+      ...o,
+    }) as import('../types').Transaction;
+
+  it('computes opening, running and closing balances', () => {
+    const s = buildStatement(
+      [acc('cash', 1000_00), acc('bank')],
+      [
+        tx({ type: 'income', amount: 500_00, date: '2026-09-30' }),
+        tx({ type: 'expense', amount: 200_00, date: '2026-10-02', time: '09:00' }),
+        tx({ type: 'income', amount: 5000_00, account_id: 'bank', date: '2026-10-01' }),
+        tx({ type: 'transfer', amount: 1000_00, account_id: 'bank', to_account_id: 'cash', date: '2026-10-03' }),
+        tx({ type: 'expense', amount: 99_00, date: '2026-11-01' }),
+      ],
+      '2026-10-01',
+      '2026-10-31',
+    );
+    expect(s.opening).toBe(1500_00);
+    expect(s.lines.map((l) => l.balance)).toEqual([6500_00, 6300_00, 5300_00, 6300_00]);
+    expect(s.closing).toBe(6300_00);
+    expect(s.accounts.find((a) => a.account.id === 'cash')?.closing).toBe(2300_00);
+  });
+
+  it('shows a transfer to an unselected account as money out', () => {
+    const s = buildStatement(
+      [acc('bank', 100_00)],
+      [tx({ type: 'transfer', amount: 40_00, account_id: 'bank', to_account_id: 'cash', date: '2026-10-05' })],
+      '2026-10-01',
+      '2026-10-31',
+    );
+    expect(s.lines).toHaveLength(1);
+    expect(s.closing).toBe(60_00);
   });
 });

@@ -240,6 +240,14 @@ export default function SettingsScreen() {
           {t('settings.privacyNote')}
         </Text>
         <ListRow
+          title={t('statement.title')}
+          subtitle={t('statement.settingsHint')}
+          icon="document-text"
+          chevron
+          onPress={() => router.push('/statement')}
+        />
+        <Divider />
+        <ListRow
           title={t('settings.backup')}
           subtitle={t('settings.backupHint')}
           icon="cloud-upload-outline"
@@ -248,11 +256,7 @@ export default function SettingsScreen() {
         <Divider />
         <ListRow title={t('settings.restore')} icon="cloud-download-outline" onPress={restore} />
         <Divider />
-        <ListRow
-          title={t('settings.exportCsv')}
-          icon="document-text-outline"
-          onPress={() => shareTransactionsCsv(db, t)}
-        />
+        <ListRow title={t('settings.exportCsv')} icon="grid-outline" onPress={() => shareTransactionsCsv(db, t)} />
         <Divider />
         <ListRow title={t('settings.deleteAll')} icon="trash-outline" onPress={deleteAll} />
       </Card>
