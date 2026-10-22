@@ -2,4 +2,4 @@
 export const SUPPORT_EMAIL = '';
 
 // Public URL of the privacy policy (Play Store requires one). Empty shows the in-app policy only.
-export const PRIVACY_URL = '';
+export const PRIVACY_URL = 'https://manahilfatima72.github.io/hisaab-app/privacy-policy.html';

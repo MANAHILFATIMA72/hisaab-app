@@ -1,9 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { prepareAds } from '@/services/ads';
 import { useApp } from '@/state/app';
 import { IconButton, type IconName } from '@/ui/kit';
 
@@ -23,6 +25,10 @@ export default function TabsLayout() {
   // Size the bar explicitly around Android's navigation buttons/gesture area, so it is never
   // squeezed behind them on edge-to-edge phones.
   const insets = useSafeAreaInsets();
+  // Start ads only once the user is inside the app (after onboarding and the lock screen).
+  useEffect(() => {
+    prepareAds();
+  }, []);
   // Reverse tab order in Urdu so the first tab sits on the right, as RTL readers expect.
   const tabs = isRTL ? [...TABS].reverse() : TABS;
   return (

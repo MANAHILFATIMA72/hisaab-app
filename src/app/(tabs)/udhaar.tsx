@@ -10,6 +10,7 @@ import { myTotals } from '@/lib/groups';
 import { isOverdue, totals, withBalances } from '@/lib/udhaar';
 import { useApp, useLoad } from '@/state/app';
 import { Button, Card, CategoryIcon, Divider, Empty, Fab, ListRow, Row, Screen, Segmented, Text } from '@/ui/kit';
+import { AdBanner } from '@/ui/ad-banner';
 
 export default function LenaDena() {
   const { view: initialView } = useLocalSearchParams<{ view?: 'people' | 'groups' }>();
@@ -36,98 +37,105 @@ export default function LenaDena() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Screen>
-        <Row>
-          <Card style={{ flex: 1 }}>
-            <Text variant="caption" muted>
-              {t('udhaar.toReceive')}
-            </Text>
-            <Text variant="heading" color={colors.income}>
-              {money(data?.totals.toReceive ?? 0, { ignoreHidden: true })}
-            </Text>
-          </Card>
-          <Card style={{ flex: 1 }}>
-            <Text variant="caption" muted>
-              {t('udhaar.toPay')}
-            </Text>
-            <Text variant="heading" color={colors.expense}>
-              {money(data?.totals.toPay ?? 0, { ignoreHidden: true })}
-            </Text>
-          </Card>
-        </Row>
-        <Segmented
-          value={view}
-          onChange={setView}
-          options={[
-            { value: 'people', label: t('lenaDena.people') },
-            { value: 'groups', label: t('lenaDena.groups') },
-          ]}
-        />
-        {view === 'groups' ? (
-          <GroupList groups={data?.groups ?? []} />
-        ) : (
-          <>
-            <Segmented
-              value={tab}
-              onChange={setTab}
-              options={[
-                { value: 'open', label: t('udhaar.open') },
-                { value: 'settled', label: t('udhaar.history') },
-              ]}
-            />
-            <Card style={{ paddingVertical: Spacing.one }}>
-              {shown.length === 0 ? (
-                <Empty icon="people-outline" text={tab === 'open' ? t('udhaar.emptyHint') : t('common.empty')} />
-              ) : (
-                shown.map((u, i) => {
-                  const overdue = isOverdue(u, now);
-                  const given = u.direction === 'given';
-                  const sub = [
-                    given ? t('udhaar.given') : t('udhaar.taken'),
-                    u.due_date ? (overdue ? t('udhaar.overdue') : t('udhaar.dueOn', { date: date(u.due_date) })) : null,
-                    u.reason || null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ');
-                  return (
-                    <View key={u.id}>
-                      {i > 0 && <Divider />}
-                      <ListRow
-                        onPress={() => router.push(`/udhaar/${u.id}`)}
-                        left={
-                          <CategoryIcon
-                            icon={given ? 'arrow-up' : 'arrow-down'}
-                            color={given ? colors.income : colors.expense}
-                          />
-                        }
-                        title={u.person}
-                        subtitle={sub}
-                        right={
-                          <View style={{ alignItems: 'flex-end' }}>
-                            <Text variant="amount" color={given ? colors.income : colors.expense}>
-                              {money(u.settled ? u.amount : u.remaining, { ignoreHidden: true })}
-                            </Text>
-                            {overdue && (
-                              <Text variant="caption" color={colors.danger}>
-                                {t('udhaar.overdue')}
-                              </Text>
-                            )}
-                          </View>
-                        }
-                      />
-                    </View>
-                  );
-                })
-              )}
+      <View style={{ flex: 1 }}>
+        <Screen>
+          <Row>
+            <Card style={{ flex: 1 }}>
+              <Text variant="caption" muted>
+                {t('udhaar.toReceive')}
+              </Text>
+              <Text variant="heading" color={colors.income}>
+                {money(data?.totals.toReceive ?? 0, { ignoreHidden: true })}
+              </Text>
             </Card>
-          </>
+            <Card style={{ flex: 1 }}>
+              <Text variant="caption" muted>
+                {t('udhaar.toPay')}
+              </Text>
+              <Text variant="heading" color={colors.expense}>
+                {money(data?.totals.toPay ?? 0, { ignoreHidden: true })}
+              </Text>
+            </Card>
+          </Row>
+          <Segmented
+            value={view}
+            onChange={setView}
+            options={[
+              { value: 'people', label: t('lenaDena.people') },
+              { value: 'groups', label: t('lenaDena.groups') },
+            ]}
+          />
+          {view === 'groups' ? (
+            <GroupList groups={data?.groups ?? []} />
+          ) : (
+            <>
+              <Segmented
+                value={tab}
+                onChange={setTab}
+                options={[
+                  { value: 'open', label: t('udhaar.open') },
+                  { value: 'settled', label: t('udhaar.history') },
+                ]}
+              />
+              <Card style={{ paddingVertical: Spacing.one }}>
+                {shown.length === 0 ? (
+                  <Empty icon="people-outline" text={tab === 'open' ? t('udhaar.emptyHint') : t('common.empty')} />
+                ) : (
+                  shown.map((u, i) => {
+                    const overdue = isOverdue(u, now);
+                    const given = u.direction === 'given';
+                    const sub = [
+                      given ? t('udhaar.given') : t('udhaar.taken'),
+                      u.due_date
+                        ? overdue
+                          ? t('udhaar.overdue')
+                          : t('udhaar.dueOn', { date: date(u.due_date) })
+                        : null,
+                      u.reason || null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ');
+                    return (
+                      <View key={u.id}>
+                        {i > 0 && <Divider />}
+                        <ListRow
+                          onPress={() => router.push(`/udhaar/${u.id}`)}
+                          left={
+                            <CategoryIcon
+                              icon={given ? 'arrow-up' : 'arrow-down'}
+                              color={given ? colors.income : colors.expense}
+                            />
+                          }
+                          title={u.person}
+                          subtitle={sub}
+                          right={
+                            <View style={{ alignItems: 'flex-end' }}>
+                              <Text variant="amount" color={given ? colors.income : colors.expense}>
+                                {money(u.settled ? u.amount : u.remaining, { ignoreHidden: true })}
+                              </Text>
+                              {overdue && (
+                                <Text variant="caption" color={colors.danger}>
+                                  {t('udhaar.overdue')}
+                                </Text>
+                              )}
+                            </View>
+                          }
+                        />
+                      </View>
+                    );
+                  })
+                )}
+              </Card>
+            </>
+          )}
+        </Screen>
+        {view === 'groups' ? (
+          <Fab label={t('groups.add')} onPress={() => router.push('/groups/edit/new')} />
+        ) : (
+          <Fab label={t('udhaar.add')} onPress={() => router.push('/udhaar/edit/new')} />
         )}
-      </Screen>
-      {view === 'groups' ? (
-        <Fab label={t('groups.add')} onPress={() => router.push('/groups/edit/new')} />
-      ) : (
-        <Fab label={t('udhaar.add')} onPress={() => router.push('/udhaar/edit/new')} />
-      )}
+      </View>
+      <AdBanner />
     </View>
   );
 }

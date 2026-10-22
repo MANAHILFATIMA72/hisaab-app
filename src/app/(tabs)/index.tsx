@@ -76,6 +76,7 @@ export default function Home() {
           upcoming,
           spentToday: todayTotals.expense,
         }),
+        spentToday: todayTotals.expense,
         udhaar: (() => {
           const u = udhaarTotals(withBalances(udhaar.items, udhaar.payments));
           const g = myTotals(groups.map((x) => x.myNet));
@@ -153,10 +154,15 @@ export default function Home() {
                 {money(data.safe.today, { ignoreHidden: true })}
               </Text>
               <Text variant="caption" muted>
-                {t('home.safeToSpendHint', {
-                  perDay: money(data.safe.perDay, { ignoreHidden: true }),
-                  days: data.safe.daysLeft,
-                })}
+                {data.spentToday > data.safe.perDay
+                  ? t('home.safeOverToday', {
+                      spent: money(data.spentToday, { ignoreHidden: true }),
+                      perDay: money(data.safe.perDay, { ignoreHidden: true }),
+                    })
+                  : t('home.safeToSpendHint', {
+                      perDay: money(data.safe.perDay, { ignoreHidden: true }),
+                      days: data.safe.daysLeft,
+                    })}
               </Text>
             </>
           )}

@@ -6,7 +6,7 @@ Hisaab is a personal money organizer. This policy explains what happens to your 
 
 ## The short version
 
-Your financial records stay on your phone. Hisaab has no accounts, no servers and no analytics in this version, so we never receive your data.
+Your financial records stay on your phone. Hisaab has no accounts, no servers and no analytics, so we never receive your money data. The app shows ads from Google AdMob, which uses your phone's advertising ID (see "Ads" below).
 
 ## What the app stores
 
@@ -24,10 +24,19 @@ Nothing is sent automatically. Data leaves your phone only when you choose to:
 - **WhatsApp reminder, group summary or PDF report:** the app opens WhatsApp or the share menu with a message you can read and edit before sending.
 - **Feedback email:** if you choose to send feedback, your email app opens with a message addressed to us.
 
+## Ads
+
+Hisaab is free and shows banner ads provided by Google AdMob. To show and measure ads, the Google Mobile Ads SDK may collect your device's advertising ID, IP address, approximate location derived from it, and information about ad interactions and app performance. This is handled by Google under the [Google Privacy Policy](https://policies.google.com/privacy) and [how Google uses information from apps that use its services](https://policies.google.com/technologies/partner-sites).
+
+Your transactions, budgets, udhaar, groups and other records are never shared with AdMob or anyone else.
+
+You can reset or delete your advertising ID, or opt out of personalised ads, in your phone's Settings → Google → Ads (or Settings → Privacy → Ads). Where the law requires consent (for example in the EEA and UK), the app asks before personalised ads are shown, and you can change your choice later under Settings → Ad privacy choices.
+
 ## Permissions
 
 - **Notifications:** for the reminders you turn on (daily log, bills, udhaar due dates, budget alerts, monthly summary).
 - **Camera:** only when you tap "Camera" to photograph a receipt. Choosing a photo from the gallery uses Android's photo picker and needs no permission.
+- **Internet and advertising ID:** used only by the Google ads SDK to load ads.
 - **Biometrics:** only if you turn on fingerprint unlock. The fingerprint never leaves your phone's secure hardware; the app only receives "matched" or "not matched".
 
 Hisaab does not read your SMS, contacts, location or microphone, and only sees the photos you pick yourself. The "paste bank SMS" feature only reads text you have copied yourself, at the moment you tap the button.
@@ -42,7 +51,7 @@ Hisaab is not directed at children under 13 and does not knowingly collect their
 
 ## Changes
 
-If a future version adds sign-in, cloud backup, ads or analytics, this policy will be updated before that version is released, and the app will ask for your consent where required.
+If a future version adds sign-in, cloud backup or analytics, this policy will be updated before that version is released, and the app will ask for your consent where required.
 
 ## Contact
 

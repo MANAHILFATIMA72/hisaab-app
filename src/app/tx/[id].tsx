@@ -259,7 +259,8 @@ function Editor({ data, isNew, initialType }: { data: Loaded; isNew: boolean; in
       id: newAccountId,
       name: sms.bank,
       type: sms.bankType === 'wallet' ? 'wallet' : 'bank',
-      opening_balance: 0,
+      // Start from the balance in the SMS, so the account shows it once this transaction is saved.
+      opening_balance: sms.balance === null ? 0 : sms.balance + (sms.kind === 'income' ? -sms.amount : sms.amount),
     });
     setAccountId(newAccountId);
     changed();

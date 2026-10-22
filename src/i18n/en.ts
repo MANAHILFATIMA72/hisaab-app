@@ -75,6 +75,7 @@ export const en = {
     totalBalance: 'Total balance',
     safeToSpend: 'Safe to spend today',
     safeToSpendHint: '{perDay} per day for {days} days',
+    safeOverToday: 'You spent {spent} today, more than today’s share of {perDay}.',
     safeNoBudget: 'Set a monthly budget to see how much you can spend each day.',
     setBudget: 'Set budget',
     thisMonth: 'This month',
@@ -462,7 +463,9 @@ export const en = {
     feedback: 'Send feedback or report a bug',
     privacy: 'Privacy policy',
     version: 'Version {version}',
-    privacyNote: 'Your data is stored encrypted on this phone only. We do not upload it anywhere.',
+    privacyNote:
+      'Your money data is stored encrypted on this phone only. We never upload or share it. Ads are shown by Google AdMob, which may use your phone’s advertising ID.',
+    adPrivacy: 'Ad privacy choices',
     weeklySummary: 'Weekly summary reminder (Sunday)',
   },
 

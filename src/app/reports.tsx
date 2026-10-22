@@ -14,6 +14,7 @@ import { useApp, useLoad } from '@/state/app';
 import { categoryMap, categoryName } from '@/state/labels';
 import { Bars, Donut, Legend, type Slice } from '@/ui/charts';
 import { Button, Card, Empty, IconButton, Row, Screen, SectionTitle, Text } from '@/ui/kit';
+import { AdBanner } from '@/ui/ad-banner';
 
 const MAX_SLICES = 6;
 
@@ -124,7 +125,7 @@ export default function Reports() {
   const change = view ? percentChange(view.sCur.expense, view.sPrev.expense) : null;
 
   return (
-    <Screen>
+    <Screen footer={<AdBanner />}>
       <Stack.Screen options={{ title: t('reports.title') }} />
       <Row style={{ justifyContent: 'space-between' }}>
         <IconButton

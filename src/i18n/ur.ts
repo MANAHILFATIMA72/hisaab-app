@@ -77,6 +77,7 @@ export const ur: Dictionary = {
     totalBalance: 'کل رقم',
     safeToSpend: 'آج آپ اتنا خرچ کر سکتے ہیں',
     safeToSpendHint: '{days} دن کے لیے روزانہ {perDay}',
+    safeOverToday: 'آج آپ نے {spent} خرچ کیے، جو آج کے حصے {perDay} سے زیادہ ہے۔',
     safeNoBudget: 'ماہانہ بجٹ بنائیں تاکہ پتا چلے روز کتنا خرچ کرنا ہے۔',
     setBudget: 'بجٹ بنائیں',
     thisMonth: 'اس مہینے',
@@ -461,7 +462,9 @@ export const ur: Dictionary = {
     feedback: 'رائے دیں یا مسئلہ بتائیں',
     privacy: 'پرائیویسی پالیسی',
     version: 'ورژن {version}',
-    privacyNote: 'آپ کا ڈیٹا صرف اسی فون پر محفوظ (انکرپٹڈ) ہے۔ ہم اسے کہیں اپلوڈ نہیں کرتے۔',
+    privacyNote:
+      'آپ کا مالی ڈیٹا صرف اسی فون پر محفوظ (انکرپٹڈ) ہے۔ ہم اسے کبھی اپلوڈ یا شیئر نہیں کرتے۔ اشتہارات Google AdMob دکھاتا ہے جو فون کی ایڈورٹائزنگ ID استعمال کر سکتا ہے۔',
+    adPrivacy: 'اشتہارات کی پرائیویسی',
     weeklySummary: 'ہفتہ وار خلاصہ (اتوار)',
   },
 

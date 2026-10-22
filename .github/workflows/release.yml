@@ -1,0 +1,55 @@
+# Builds the Play Store bundle (.aab) and a matching APK, both signed with the upload key,
+# and publishes them as a GitHub release. Needs two repository secrets:
+#   HISAAB_UPLOAD_KEYSTORE  the upload keystore (.jks) as base64 text
+#   HISAAB_UPLOAD_PASSWORD  its password
+name: Play Store release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - run: npx expo prebuild --platform android --no-install
+      - name: Use the upload key
+        env:
+          KEYSTORE_B64: ${{ secrets.HISAAB_UPLOAD_KEYSTORE }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::Add the HISAAB_UPLOAD_KEYSTORE and HISAAB_UPLOAD_PASSWORD repository secrets first."
+            exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          echo "HISAAB_KEYSTORE_PATH=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+          python3 scripts/android-release-signing.py
+      - run: ./gradlew bundleRelease assembleRelease --no-daemon
+        working-directory: android
+        env:
+          HISAAB_UPLOAD_PASSWORD: ${{ secrets.HISAAB_UPLOAD_PASSWORD }}
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p "require('./app.json').expo.version")
+          code=$(node -p "require('./app.json').expo.android.versionCode")
+          tag="v$version-$code"
+          cp android/app/build/outputs/bundle/release/app-release.aab "hisaab-$version.aab"
+          cp android/app/build/outputs/apk/release/app-release.apk "hisaab-$version.apk"
+          gh release create "$tag" "hisaab-$version.aab" "hisaab-$version.apk" --prerelease \
+            --title "Hisaab $version (build $code)" \
+            --notes "Upload hisaab-$version.aab to Google Play Console. The .apk is the same build for installing directly."

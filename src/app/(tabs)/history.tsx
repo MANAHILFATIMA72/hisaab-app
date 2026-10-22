@@ -14,6 +14,7 @@ import { useApp, useLoad } from '@/state/app';
 import { categoryMap, categoryName } from '@/state/labels';
 import { Card, Chips, Empty, Fab, Input, Row, Text } from '@/ui/kit';
 import { TxRow } from '@/ui/tx-row';
+import { AdBanner } from '@/ui/ad-banner';
 
 type Range = 'this' | 'last' | 'all';
 
@@ -188,27 +189,30 @@ export default function History() {
           </Row>
         )}
       </View>
-      <FlatList
-        data={items}
-        keyExtractor={(it) => (it.kind === 'header' ? `h-${it.date}` : it.tx.id)}
-        contentContainerStyle={{ paddingHorizontal: Spacing.three, paddingBottom: 120 }}
-        ListEmptyComponent={<Empty icon="search" text={t('common.empty')} />}
-        renderItem={({ item }) =>
-          item.kind === 'header' ? (
-            <Row style={{ justifyContent: 'space-between', marginTop: Spacing.three }}>
-              <Text variant="label" muted>
-                {date(item.date)}
-              </Text>
-              <Text variant="caption" muted>
-                {money(item.net, { sign: true, ignoreHidden: true })}
-              </Text>
-            </Row>
-          ) : data ? (
-            <TxRow tx={item.tx} categories={data.catMap} accounts={data.accMap} />
-          ) : null
-        }
-      />
-      <Fab label={t('tx.add')} onPress={() => router.push('/tx/new')} />
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={items}
+          keyExtractor={(it) => (it.kind === 'header' ? `h-${it.date}` : it.tx.id)}
+          contentContainerStyle={{ paddingHorizontal: Spacing.three, paddingBottom: 120 }}
+          ListEmptyComponent={<Empty icon="search" text={t('common.empty')} />}
+          renderItem={({ item }) =>
+            item.kind === 'header' ? (
+              <Row style={{ justifyContent: 'space-between', marginTop: Spacing.three }}>
+                <Text variant="label" muted>
+                  {date(item.date)}
+                </Text>
+                <Text variant="caption" muted>
+                  {money(item.net, { sign: true, ignoreHidden: true })}
+                </Text>
+              </Row>
+            ) : data ? (
+              <TxRow tx={item.tx} categories={data.catMap} accounts={data.accMap} />
+            ) : null
+          }
+        />
+        <Fab label={t('tx.add')} onPress={() => router.push('/tx/new')} />
+      </View>
+      <AdBanner />
     </SafeAreaView>
   );
 }

@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { router, Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Alert, Linking, Modal, Platform, View } from 'react-native';
 
 import { PRIVACY_URL, SUPPORT_EMAIL } from '@/constants/app';
@@ -10,6 +10,7 @@ import { seedForProfile, wipeAll } from '@/db/repo';
 import { makeT, type Lang } from '@/i18n';
 import { CURRENCIES } from '@/lib/money';
 import type { ProfileType } from '@/lib/types';
+import { getAdsState, showAdPrivacyOptions, subscribeAds } from '@/services/ads';
 import { pickAndRestore, shareBackup, shareTransactionsCsv } from '@/services/data';
 import { biometricAvailable, clearPin, setPin } from '@/services/lock';
 import { ensurePermission, syncReminders } from '@/services/notifications';
@@ -23,6 +24,7 @@ const REMINDER_TIMES = ['off', '09:00', '13:00', '20:00', '21:00', '22:00'];
 
 export default function SettingsScreen() {
   const { db, t, colors, settings, setSetting, reloadSettings, changed } = useApp();
+  const ads = useSyncExternalStore(subscribeAds, getAdsState);
   const [pinStep, setPinStep] = useState<'set' | 'confirm' | null>(null);
   const [firstPin, setFirstPin] = useState('');
   const [pinError, setPinError] = useState<string>();
@@ -274,6 +276,12 @@ export default function SettingsScreen() {
                 )
               }
             />
+            <Divider />
+          </>
+        ) : null}
+        {ads.privacyOptions ? (
+          <>
+            <ListRow title={t('settings.adPrivacy')} icon="megaphone-outline" onPress={() => showAdPrivacyOptions()} />
             <Divider />
           </>
         ) : null}

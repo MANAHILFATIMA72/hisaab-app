@@ -139,11 +139,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       colors: isDark ? Colors.dark : Colors.light,
       isDark,
       fontScale: settings.largeText ? 1.2 : 1,
-      money: (minor, opts) =>
-        formatMoney(minor, settings.currency, {
+      money: (minor, opts) => {
+        const text = formatMoney(minor, settings.currency, {
           hidden: settings.hideBalances && !opts?.ignoreHidden,
           showSign: opts?.sign,
-        }),
+        });
+        // In Urdu, keep "-Rs 3,787" together and in order inside right-to-left sentences.
+        return settings.lang === 'ur' ? `\u2066${text}\u2069` : text;
+      },
       date: (iso) => formatDate(iso, settings.lang),
       period: periodContaining(todayDate, settings.monthStartDay),
       version,
