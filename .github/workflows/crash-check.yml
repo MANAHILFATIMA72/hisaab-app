@@ -1,0 +1,47 @@
+# Installs a test APK on an Android emulator, opens it and saves the crash log, if any.
+name: Crash check
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag of the APK to check (e.g. test-5)
+        required: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Download APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ inputs.tag }}" --repo "$GITHUB_REPOSITORY" --pattern '*.apk' --output app.apk
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: |
+            adb install -r app.apk
+            adb logcat -c
+            adb shell monkey -p com.manahil.hisaab -c android.intent.category.LAUNCHER 1
+            sleep 40
+            adb logcat -d > logcat.txt || true
+            adb shell pidof com.manahil.hisaab || echo "APP NOT RUNNING" >> logcat.txt
+            adb exec-out screencap -p > screen.png || true
+      - name: Crash summary
+        if: always()
+        run: grep -n -A40 "FATAL EXCEPTION\|AndroidRuntime\|ReactNativeJS\|APP NOT RUNNING" logcat.txt | head -200 || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: crash-check-${{ inputs.tag }}
+          path: |
+            logcat.txt
+            screen.png
