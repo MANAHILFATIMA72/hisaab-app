@@ -3,6 +3,7 @@ export const en = {
   tagline: 'Your money, organized',
 
   common: {
+    ad: 'Advertisement',
     save: 'Save',
     cancel: 'Cancel',
     delete: 'Delete',

@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import type { TKey } from '@/i18n';
 import { useApp } from '@/state/app';
 import { Card, Divider, ListRow, Screen, type IconName } from '@/ui/kit';
-import { AdBanner } from '@/ui/ad-banner';
+import { AdBanner, PageEndAd } from '@/ui/ad-banner';
 
 const ITEMS: { href: Href; label: TKey; icon: IconName }[] = [
   { href: '/goals', label: 'more.goals', icon: 'flag' },
@@ -30,6 +30,7 @@ export default function More() {
           </View>
         ))}
       </Card>
+      <PageEndAd />
     </Screen>
   );
 }

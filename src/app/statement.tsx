@@ -8,6 +8,8 @@ import { formatMoney } from '@/lib/money';
 import { sharePdfReport, shareStatementPdf } from '@/services/data';
 import { useApp, useLoad } from '@/state/app';
 import { Button, Card, Chips, DateField, Field, Screen, Text } from '@/ui/kit';
+import { showInterstitial } from '@/services/ads';
+import { PageEndAd } from '@/ui/ad-banner';
 
 type Range = 'this' | 'last' | 'three' | 'year' | 'all' | 'custom';
 
@@ -43,6 +45,7 @@ export default function StatementScreen() {
   const run = async (kind: 'statement' | 'report') => {
     setBusy(true);
     try {
+      await showInterstitial();
       const r = resolve();
       if (kind === 'statement') await shareStatementPdf(db, opts, r.from, r.to, accountId === 'all' ? null : accountId);
       else await sharePdfReport(db, opts, r.from, r.to);
@@ -104,6 +107,7 @@ export default function StatementScreen() {
         disabled={busy}
         onPress={() => run('report')}
       />
+      <PageEndAd />
     </Screen>
   );
 }

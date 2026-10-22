@@ -14,7 +14,8 @@ import { useApp, useLoad } from '@/state/app';
 import { categoryMap, categoryName } from '@/state/labels';
 import { Bars, Donut, Legend, type Slice } from '@/ui/charts';
 import { Button, Card, Empty, IconButton, Row, Screen, SectionTitle, Text } from '@/ui/kit';
-import { AdBanner } from '@/ui/ad-banner';
+import { AdBanner, PageEndAd } from '@/ui/ad-banner';
+import { showInterstitial } from '@/services/ads';
 
 const MAX_SLICES = 6;
 
@@ -238,17 +239,19 @@ export default function Reports() {
             kind="secondary"
             icon="document-text-outline"
             title={t('reports.exportPdf')}
-            onPress={() =>
-              sharePdfReport(
+            onPress={async () => {
+              await showInterstitial();
+              await sharePdfReport(
                 db,
                 { t, money: (m) => formatMoney(m, settings.currency), date, rtl: isRTL },
                 period.start,
                 period.end,
-              )
-            }
+              );
+            }}
           />
         </>
       )}
+      <PageEndAd />
     </Screen>
   );
 }

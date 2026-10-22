@@ -39,6 +39,7 @@ import {
   Text,
   ToggleRow,
 } from '@/ui/kit';
+import { PageEndAd } from '@/ui/ad-banner';
 
 type Editing =
   | { kind: 'limit'; categoryId: string | null; title: string; initial?: number }
@@ -310,6 +311,7 @@ export default function BudgetScreen() {
           changed();
         }}
       />
+      <PageEndAd />
     </Screen>
   );
 }

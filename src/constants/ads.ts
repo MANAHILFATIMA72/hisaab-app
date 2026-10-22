@@ -2,6 +2,7 @@
 // Google's test ad instead. The AdMob *App ID* goes in app.json under the react-native-google-mobile-ads plugin.
 export const AD_UNITS = {
   banner: 'ca-app-pub-3873864995862689/1465258662',
+  interstitial: 'ca-app-pub-3873864995862689/3612909854',
 };
 
 // Test builds (the "Test APK" workflow) set EXPO_PUBLIC_TEST_ADS=1 so they never show real ads.

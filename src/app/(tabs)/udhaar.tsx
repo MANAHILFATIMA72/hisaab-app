@@ -10,7 +10,7 @@ import { myTotals } from '@/lib/groups';
 import { isOverdue, totals, withBalances } from '@/lib/udhaar';
 import { useApp, useLoad } from '@/state/app';
 import { Button, Card, CategoryIcon, Divider, Empty, Fab, ListRow, Row, Screen, Segmented, Text } from '@/ui/kit';
-import { AdBanner } from '@/ui/ad-banner';
+import { AdBanner, PageEndAd } from '@/ui/ad-banner';
 
 export default function LenaDena() {
   const { view: initialView } = useLocalSearchParams<{ view?: 'people' | 'groups' }>();
@@ -128,6 +128,7 @@ export default function LenaDena() {
               </Card>
             </>
           )}
+          <PageEndAd />
         </Screen>
         {view === 'groups' ? (
           <Fab label={t('groups.add')} onPress={() => router.push('/groups/edit/new')} />

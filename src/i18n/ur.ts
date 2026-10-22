@@ -5,6 +5,7 @@ export const ur: Dictionary = {
   tagline: 'آپ کے پیسوں کا حساب، آسان',
 
   common: {
+    ad: 'اشتہار',
     save: 'محفوظ کریں',
     cancel: 'منسوخ',
     delete: 'حذف کریں',
