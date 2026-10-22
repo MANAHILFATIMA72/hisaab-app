@@ -10,7 +10,7 @@ import { seedForProfile, wipeAll } from '@/db/repo';
 import { makeT, type Lang } from '@/i18n';
 import { CURRENCIES } from '@/lib/money';
 import type { ProfileType } from '@/lib/types';
-import { getAdsState, showAdPrivacyOptions, subscribeAds } from '@/services/ads';
+import { getAdsState, showAdPrivacyOptions, showInterstitial, subscribeAds } from '@/services/ads';
 import { pickAndRestore, shareBackup, shareTransactionsCsv } from '@/services/data';
 import { biometricAvailable, clearPin, setPin } from '@/services/lock';
 import { ensurePermission, syncReminders } from '@/services/notifications';
@@ -258,7 +258,14 @@ export default function SettingsScreen() {
         <Divider />
         <ListRow title={t('settings.restore')} icon="cloud-download-outline" onPress={restore} />
         <Divider />
-        <ListRow title={t('settings.exportCsv')} icon="grid-outline" onPress={() => shareTransactionsCsv(db, t)} />
+        <ListRow
+          title={t('settings.exportCsv')}
+          icon="grid-outline"
+          onPress={async () => {
+            await showInterstitial();
+            await shareTransactionsCsv(db, t);
+          }}
+        />
         <Divider />
         <ListRow title={t('settings.deleteAll')} icon="trash-outline" onPress={deleteAll} />
       </Card>

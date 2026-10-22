@@ -109,8 +109,9 @@ export default function Reports() {
   const periodLabel = `${date(period.start)} – ${date(period.end)}`;
   const isCurrent = period.start === current.start;
 
-  const shareSummary = () => {
+  const shareSummary = async () => {
     if (!view) return;
+    await showInterstitial();
     const m = (v: number) => formatMoney(v, settings.currency);
     Share.share({
       message: t('reports.summaryText', {
@@ -233,7 +234,10 @@ export default function Reports() {
             kind="secondary"
             icon="download-outline"
             title={t('reports.exportCsv')}
-            onPress={() => shareTransactionsCsv(db, t, period.start, period.end)}
+            onPress={async () => {
+              await showInterstitial();
+              await shareTransactionsCsv(db, t, period.start, period.end);
+            }}
           />
           <Button
             kind="secondary"

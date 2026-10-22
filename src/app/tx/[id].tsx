@@ -26,6 +26,7 @@ import { parseAmount, toMajor } from '@/lib/money';
 import { nextOccurrence } from '@/lib/recurring';
 import { parseSms, type ParsedSms } from '@/lib/sms-parse';
 import type { Category, Frequency, Transaction, TxType } from '@/lib/types';
+import { adBreak } from '@/services/ads';
 import { checkBudgetAlerts } from '@/services/budget-alerts';
 import { captureReceipt, deleteReceipt } from '@/services/receipts';
 import { useApp, useLoad } from '@/state/app';
@@ -352,6 +353,7 @@ function Editor({ data, isNew, initialType }: { data: Loaded; isNew: boolean; in
     changed();
     router.back();
     if (alerts.length) Alert.alert(t('budget.alert80Title'), alerts.join('\n'));
+    else if (isNew) adBreak();
   };
 
   const remove = () => {

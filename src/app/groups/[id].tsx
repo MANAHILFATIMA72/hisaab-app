@@ -5,6 +5,7 @@ import { Spacing } from '@/constants/theme';
 import { deleteGroup, deleteSettlement, getGroup } from '@/db/groups-repo';
 import { formatMoney } from '@/lib/money';
 import { whatsAppUrl } from '@/lib/udhaar';
+import { showInterstitial } from '@/services/ads';
 import { useApp, useLoad } from '@/state/app';
 import {
   Button,
@@ -50,7 +51,8 @@ export default function GroupScreen() {
     return lines.join('\n');
   };
 
-  const share = () => {
+  const share = async () => {
+    await showInterstitial();
     const text = summaryText();
     Linking.openURL(whatsAppUrl('', text)).catch(() => Share.share({ message: text }));
   };

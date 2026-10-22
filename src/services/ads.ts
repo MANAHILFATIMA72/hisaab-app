@@ -94,6 +94,7 @@ function loadInterstitial() {
   interstitialLoaded = false;
   ad.addAdEventListener(AdEventType.LOADED, () => {
     interstitialLoaded = true;
+    if (!AD_UNITS.appOpen && !testing) maybeLaunchAd();
   });
   ad.addAdEventListener(AdEventType.ERROR, () => {
     if (interstitial === ad && !interstitialLoaded) interstitial = null;
@@ -127,6 +128,14 @@ export function showInterstitial(): Promise<void> {
   });
 }
 
+/** Counts finished tasks (like saving a transaction) and shows an interstitial after every 5th one. */
+const TASKS_PER_AD = 5;
+let tasksDone = 0;
+export function adBreak() {
+  tasksDone += 1;
+  if (tasksDone % TASKS_PER_AD === 0) showInterstitial();
+}
+
 // ---------- App open ad (full screen, when someone returns to the app) ----------
 
 const APP_OPEN_AWAY_MS = 30 * 1000; // ignore quick trips to the share sheet, camera or SMS app
@@ -145,6 +154,7 @@ function loadAppOpen() {
   appOpenLoadedAt = 0;
   ad.addAdEventListener(AdEventType.LOADED, () => {
     appOpenLoadedAt = Date.now();
+    maybeLaunchAd();
   });
   ad.addAdEventListener(AdEventType.ERROR, (e) => {
     console.log('[ads] app open failed', String(e));
@@ -182,4 +192,33 @@ function startAppOpenAds() {
       loadAppOpen();
     });
   });
+}
+
+// ---------- Ad on every few app launches ----------
+
+const LAUNCH_AD_WAIT_MS = 10 * 1000; // if no ad is ready within 10s of opening, skip it this time
+let launchAskedAt = 0;
+
+/** Called on a launch that should show an ad. Uses the app open ad, or an interstitial when there is no app open unit. */
+export function launchAd() {
+  launchAskedAt = Date.now();
+  maybeLaunchAd();
+}
+
+function maybeLaunchAd() {
+  if (!launchAskedAt || Date.now() - launchAskedAt > LAUNCH_AD_WAIT_MS) return;
+  if (appOpenUnitId()) {
+    const ad = appOpen;
+    if (!ad || !appOpenLoadedAt) return;
+    launchAskedAt = 0;
+    lastInterstitial = Date.now();
+    ad.show().catch(() => {
+      if (appOpen === ad) appOpen = null;
+      loadAppOpen();
+    });
+    return;
+  }
+  if (!interstitialLoaded) return;
+  launchAskedAt = 0;
+  showInterstitial();
 }

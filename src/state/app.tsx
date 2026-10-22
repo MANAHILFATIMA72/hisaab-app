@@ -32,6 +32,7 @@ export type Settings = {
   ruleIncome: string; // monthly income for the 50/30/20 check, in minor units, '' when not used
   zakatGoldPrice: string;
   zakatSilverPrice: string;
+  launches: number; // app opens after onboarding, for the ad on every few launches
 };
 
 const DEFAULTS: Settings = {
@@ -56,6 +57,7 @@ const DEFAULTS: Settings = {
   ruleIncome: '',
   zakatGoldPrice: '',
   zakatSilverPrice: '',
+  launches: 0,
 };
 
 function parse(raw: Record<string, string>): Settings {

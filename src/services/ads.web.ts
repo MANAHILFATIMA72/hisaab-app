@@ -9,3 +9,5 @@ export const bannerUnitId = () => '';
 export const prepareAds = () => Promise.resolve();
 export const showAdPrivacyOptions = async () => {};
 export const showInterstitial = () => Promise.resolve();
+export const adBreak = () => {};
+export const launchAd = () => {};

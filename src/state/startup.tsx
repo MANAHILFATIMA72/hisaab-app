@@ -6,6 +6,7 @@ import { CATEGORY_SEED_VERSION } from '@/db/defaults';
 import { processGroupRecurring } from '@/db/groups-repo';
 import { processRecurring, seedForProfile } from '@/db/repo';
 import { today } from '@/lib/dates';
+import { launchAd } from '@/services/ads';
 import { syncReminders } from '@/services/notifications';
 import { LockScreen } from '@/ui/lock-screen';
 
@@ -41,6 +42,10 @@ export function StartupGate({ children }: { children: ReactNode }) {
     if (!ranStartup.current) {
       ranStartup.current = true;
       run();
+      // One full-screen ad on every 5th launch (only when an ad is ready and there is internet).
+      const launches = settings.launches + 1;
+      setSetting('launches', launches);
+      if (launches % 5 === 0) launchAd();
     }
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'background') backgroundedAt.current = Date.now();
