@@ -52,6 +52,8 @@ jobs:
         run: |
           grep -n -A30 "FATAL EXCEPTION" logcat.txt | head -80 || true
           grep -n "\[ads\]\|\[tap\]\|APP NOT RUNNING\|Ads    \|UserMessagingPlatform" logcat.txt | head -80 || true
+          echo "--- crash signs ---"
+          grep -n "AndroidRuntime\|E ReactNativeJS\|ReactNativeJS.*rror\|Fatal signal\|ANR in\|has died\|com.manahil.hisaab.*died\|backtrace\|Abort message" logcat.txt | head -60 || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
