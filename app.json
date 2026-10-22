@@ -87,7 +87,8 @@
           "iosAppId": "ca-app-pub-3940256099942544~1458002511",
           "delayAppMeasurementInit": true
         }
-      ]
+      ],
+      "./plugins/with-proguard-rules.js"
     ],
     "experiments": {
       "typedRoutes": true,
