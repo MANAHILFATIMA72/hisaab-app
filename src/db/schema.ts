@@ -185,6 +185,10 @@ const MIGRATIONS: string[] = [
     created_at INTEGER NOT NULL
   );
   `,
+  // v1.1.1: the monthly budget each period actually had, so rollover only carries real leftovers.
+  `
+  CREATE TABLE budget_history (period_start TEXT PRIMARY KEY NOT NULL, amount INTEGER NOT NULL);
+  `,
 ];
 
 /** Tables in the order they can be safely restored (parents before children). */
@@ -208,6 +212,7 @@ export const DATA_TABLES = [
   'group_settlements',
   'group_recurring',
   'event_budgets',
+  'budget_history',
 ] as const;
 
 export const SCHEMA_VERSION = MIGRATIONS.length;

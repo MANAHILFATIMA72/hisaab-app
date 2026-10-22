@@ -1,6 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import type { SQLiteBindValue, SQLiteDatabase } from 'expo-sqlite';
 
+import { rolloverAmount } from '@/lib/budget';
 import { dueOccurrences } from '@/lib/recurring';
 import type { ISODate, Period } from '@/lib/dates';
 import type {
@@ -417,6 +418,44 @@ export async function setBudget(db: SQLiteDatabase, categoryId: string | null, a
   if (amount > 0) {
     await db.runAsync('INSERT INTO budgets (id, category_id, amount) VALUES (?, ?, ?)', newId(), categoryId, amount);
   }
+}
+
+/** Sets the overall monthly budget and remembers it as this period's budget (for rollover). */
+export async function setOverallBudget(db: SQLiteDatabase, period: Period, amount: number) {
+  await setBudget(db, null, amount);
+  if (amount > 0) {
+    await db.runAsync(
+      'INSERT INTO budget_history (period_start, amount) VALUES (?, ?) ON CONFLICT(period_start) DO UPDATE SET amount = excluded.amount',
+      period.start,
+      amount,
+    );
+  } else {
+    await db.runAsync('DELETE FROM budget_history WHERE period_start = ?', period.start);
+  }
+}
+
+/**
+ * This period's overall budget plus, when rollover is on, what was left of last period's budget.
+ * A period that starts with a budget already set records it, so next month knows it existed.
+ */
+export async function overallBudget(
+  db: SQLiteDatabase,
+  period: Period,
+  previous: Period,
+  rollover: boolean,
+): Promise<{ base: number; carried: number; total: number }> {
+  const base = (await db.getFirstAsync<{ amount: number }>('SELECT amount FROM budgets WHERE category_id IS NULL'))
+    ?.amount;
+  if (!base) return { base: 0, carried: 0, total: 0 };
+  await db.runAsync('INSERT OR IGNORE INTO budget_history (period_start, amount) VALUES (?, ?)', period.start, base);
+  if (!rollover) return { base, carried: 0, total: base };
+  const prev = await db.getFirstAsync<{ amount: number }>(
+    'SELECT amount FROM budget_history WHERE period_start = ?',
+    previous.start,
+  );
+  const spent = (await totalsInRange(db, previous.start, previous.end)).expense;
+  const carried = rolloverAmount(prev?.amount ?? null, spent);
+  return { base, carried, total: base + carried };
 }
 
 /** Records that an alert fired. Returns false if it had already fired. */

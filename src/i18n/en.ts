@@ -281,6 +281,7 @@ export const en = {
     wants: 'Wants (eating out, outings, shopping…)',
     ruleSave: 'Try to save {amount} this month.',
     rollover: 'Carry unused budget to next month',
+    rolloverNext: 'Whatever you don’t spend this month will be added to next month’s budget.',
     rolloverHint: '+{amount} carried over from last month',
     events: 'Event budgets',
     eventsHint: 'Eid, Ramadan, a trip or a shaadi. Add the event tag to expenses and see the total here.',

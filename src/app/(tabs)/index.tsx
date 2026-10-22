@@ -7,14 +7,14 @@ import { listGroups } from '@/db/groups-repo';
 import {
   listAccounts,
   listBills,
-  listBudgets,
   listCategories,
   listRecurring,
   listTransactions,
   listUdhaar,
+  overallBudget,
   totalsInRange,
 } from '@/db/repo';
-import { budgetStatus, progress, rolloverAmount, safeToSpend } from '@/lib/budget';
+import { budgetStatus, progress, safeToSpend } from '@/lib/budget';
 import { previousPeriod, today } from '@/lib/dates';
 import { myTotals } from '@/lib/groups';
 import { upcomingBillsTotal, upcomingTotal } from '@/lib/recurring';
@@ -42,10 +42,9 @@ export default function Home() {
   const data = useLoad(
     async (db) => {
       const now = today();
-      const [accounts, budgets, monthTotals, todayTotals, recurring, bills, udhaar, recent, categories, groups] =
+      const [accounts, monthTotals, todayTotals, recurring, bills, udhaar, recent, categories, groups] =
         await Promise.all([
           listAccounts(db),
-          listBudgets(db),
           totalsInRange(db, period.start, period.end),
           totalsInRange(db, now, now),
           listRecurring(db),
@@ -55,12 +54,9 @@ export default function Home() {
           listCategories(db, true),
           listGroups(db),
         ]);
-      const base = budgets.find((b) => b.category_id === null)?.amount ?? 0;
-      let overall = base;
-      if (settings.budgetRollover && base) {
-        const prev = previousPeriod(period, settings.monthStartDay);
-        overall += rolloverAmount(base, (await totalsInRange(db, prev.start, prev.end)).expense);
-      }
+      const overall = (
+        await overallBudget(db, period, previousPeriod(period, settings.monthStartDay), settings.budgetRollover)
+      ).total;
       const upcomingRecurring = upcomingTotal(
         recurring.filter((r) => r.active && r.type === 'expense'),
         now,

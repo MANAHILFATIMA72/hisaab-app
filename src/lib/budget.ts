@@ -134,7 +134,11 @@ export function dailyAllowanceBudget(perDay: number, period: Period): number {
   return perDay * daysLeftInPeriod(period, period.start);
 }
 
-/** Unused budget carried into the next month (FR-32). Overspending is not carried as a penalty. */
-export function rolloverAmount(previousBudget: number, previousSpent: number): number {
+/**
+ * Unused budget carried into the next month (FR-32). Only a month that really had a budget can
+ * leave something over (null = no budget was set then). Overspending is not carried as a penalty.
+ */
+export function rolloverAmount(previousBudget: number | null, previousSpent: number): number {
+  if (!previousBudget) return 0;
   return Math.max(0, previousBudget - previousSpent);
 }

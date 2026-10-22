@@ -196,6 +196,9 @@ describe('budget helpers', () => {
     expect(dailyAllowanceBudget(500_00, { start: '2026-10-01', end: '2026-10-31' })).toBe(15500_00);
     expect(rolloverAmount(10000_00, 8000_00)).toBe(2000_00);
     expect(rolloverAmount(10000_00, 12000_00)).toBe(0);
+    // no budget last month: nothing to carry, even if spending was low
+    expect(rolloverAmount(null, 0)).toBe(0);
+    expect(rolloverAmount(0, 500_00)).toBe(0);
   });
 });
 

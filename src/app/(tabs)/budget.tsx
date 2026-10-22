@@ -3,14 +3,21 @@ import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
 import { Spacing } from '@/constants/theme';
-import { listBudgets, listCategories, listEventBudgets, setBudget, spentByCategory, totalsInRange } from '@/db/repo';
+import {
+  listBudgets,
+  listCategories,
+  listEventBudgets,
+  overallBudget,
+  setBudget,
+  setOverallBudget,
+  spentByCategory,
+} from '@/db/repo';
 import {
   budgetStatus,
   dailyAllowanceBudget,
   fiftyThirtyTwenty,
   isNeed,
   progress,
-  rolloverAmount,
   roundUpFriendly,
   suggestLimits,
 } from '@/lib/budget';
@@ -46,13 +53,13 @@ export default function BudgetScreen() {
     async (d) => {
       const prev = previousPeriod(period, settings.monthStartDay);
       const prev2 = previousPeriod(prev, settings.monthStartDay);
-      const [budgets, categories, spent, prevSpent, prev2Spent, prevTotals, events] = await Promise.all([
+      const [budgets, categories, spent, prevSpent, prev2Spent, overallInfo, events] = await Promise.all([
         listBudgets(d),
         listCategories(d),
         spentByCategory(d, period),
         spentByCategory(d, prev),
         spentByCategory(d, prev2),
-        totalsInRange(d, prev.start, prev.end),
+        overallBudget(d, period, prev, settings.budgetRollover),
         listEventBudgets(d),
       ]);
       const limits = new Map(budgets.map((b) => [b.category_id, b.amount]));
@@ -68,17 +75,17 @@ export default function BudgetScreen() {
         needsSpent,
         unbudgeted: totalSpent - budgetedSpent,
         history: [prevSpent, prev2Spent].filter((h) => h.size > 0),
-        prevExpense: prevTotals.expense,
+        overallInfo,
         events,
       };
     },
-    [period.start, period.end, settings.monthStartDay],
+    [period.start, period.end, settings.monthStartDay, settings.budgetRollover],
   );
 
   if (!data) return <Screen>{null}</Screen>;
-  const baseOverall = data.limits.get(null) ?? 0;
-  const carried = settings.budgetRollover && baseOverall ? rolloverAmount(baseOverall, data.prevExpense) : 0;
-  const overall = baseOverall + carried;
+  const baseOverall = data.overallInfo.base;
+  const carried = data.overallInfo.carried;
+  const overall = data.overallInfo.total;
   const ruleIncome = Number(settings.ruleIncome) || 0;
   const rule = ruleIncome ? fiftyThirtyTwenty(ruleIncome) : null;
 
@@ -94,7 +101,7 @@ export default function BudgetScreen() {
         text: t('common.apply'),
         onPress: async () => {
           for (const [catId, amount] of limits) await setBudget(db, catId, amount);
-          await setBudget(db, null, roundUpFriendly([...limits.values()].reduce((a, b) => a + b, 0)));
+          await setOverallBudget(db, period, roundUpFriendly([...limits.values()].reduce((a, b) => a + b, 0)));
           changed();
         },
       },
@@ -148,6 +155,11 @@ export default function BudgetScreen() {
         {carried > 0 && (
           <Text variant="caption" color={colors.income}>
             {t('budget.rolloverHint', { amount: money(carried, { ignoreHidden: true }) })}
+          </Text>
+        )}
+        {settings.budgetRollover && baseOverall > 0 && carried === 0 && (
+          <Text variant="caption" muted>
+            {t('budget.rolloverNext')}
           </Text>
         )}
         <ToggleRow
@@ -276,7 +288,8 @@ export default function BudgetScreen() {
         onRemove={
           editing?.kind === 'limit' && editing.initial
             ? async () => {
-                await setBudget(db, editing.categoryId, 0);
+                if (editing.categoryId === null) await setOverallBudget(db, period, 0);
+                else await setBudget(db, editing.categoryId, 0);
                 setEditing(null);
                 changed();
               }
@@ -284,10 +297,13 @@ export default function BudgetScreen() {
         }
         onSave={async (minor) => {
           if (!editing) return;
-          if (editing.kind === 'limit') await setBudget(db, editing.categoryId, minor);
-          if (editing.kind === 'daily') await setBudget(db, null, dailyAllowanceBudget(minor, period));
+          if (editing.kind === 'limit') {
+            if (editing.categoryId === null) await setOverallBudget(db, period, minor);
+            else await setBudget(db, editing.categoryId, minor);
+          }
+          if (editing.kind === 'daily') await setOverallBudget(db, period, dailyAllowanceBudget(minor, period));
           if (editing.kind === 'rule') {
-            await setBudget(db, null, fiftyThirtyTwenty(minor).spending);
+            await setOverallBudget(db, period, fiftyThirtyTwenty(minor).spending);
             await setSetting('ruleIncome', String(minor));
           }
           setEditing(null);
