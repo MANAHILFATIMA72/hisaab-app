@@ -6,7 +6,7 @@ import mobileAds, {
   TestIds,
 } from 'react-native-google-mobile-ads';
 
-import { AD_UNITS, ADS_ENABLED } from '@/constants/ads';
+import { AD_UNITS, ADS_ENABLED, USE_TEST_ADS } from '@/constants/ads';
 
 type AdsState = { ready: boolean; privacyOptions: boolean };
 
@@ -26,7 +26,8 @@ export function subscribeAds(listener: () => void) {
 
 export const getAdsState = () => state;
 
-export const bannerUnitId = () => (__DEV__ || !AD_UNITS.banner ? TestIds.ADAPTIVE_BANNER : AD_UNITS.banner);
+export const bannerUnitId = () =>
+  __DEV__ || USE_TEST_ADS || !AD_UNITS.banner ? TestIds.ADAPTIVE_BANNER : AD_UNITS.banner;
 
 /** Asks for consent where the law needs it (EEA, UK, some US states), then starts the ads SDK. Safe to call often. */
 export function prepareAds() {
