@@ -2,29 +2,44 @@
 
 ## Store listing
 
-**App name (30 chars max):** Hisaab: Expense & Budget
+**App name (30 chars max):** Hisaab: Expense Tracker
 
 **Short description (80 chars max)**
 
-- EN: Track expenses, set budgets, split bills and remember who owes you. Offline.
+- EN: Expense tracker & budget planner. Split bills, track debts. Private & offline.
 - UR: خرچ لکھیں، بجٹ بنائیں، اُدھار کا حساب رکھیں اور زکوٰۃ نکالیں۔ آف لائن۔
 
-**Full description (EN)**
+**Full description (EN)** (keywords used naturally: expense tracker, budget planner, money manager, split bills, debt tracker, bill reminder, savings goals, offline; no keyword lists, Play rejects those)
 
-Hisaab is a simple, private money organizer that works in your own currency. Write down every expense in seconds, see how much you can safely spend today, and never forget who owes you money.
+Hisaab is a simple expense tracker and budget planner that keeps your money organized. Log an expense in seconds, see how much you can safely spend today, split bills with friends and never forget who owes you money. No sign-up, works offline, and your data stays on your phone.
 
-• Safe to spend today: tells you how much you can spend each day so the month does not run out before salary day.
-• Budgets that fit your month: start your month on your salary day. Set a total budget and category limits, and get an alert at 80% and 100%.
-• Debts: note money you lent or borrowed, record part payments, and send a polite WhatsApp reminder in one tap.
-• Savings goals: travel, wedding, laptop, Umrah or Hajj, emergency fund. See how much to save each month.
-• Zakat calculator: with silver or gold nisab, filled from your own balances. Charity tracking too.
-• Reports: monthly summary, spending by category, last 6 months and simple insights like "Food is 30% higher than last month".
-• Paste bank SMS: copy a bank or mobile wallet message and Hisaab fills in the amount.
-• Cash, bank, mobile wallet and card accounts, transfers and recurring bills.
-• 28 currencies (USD, EUR, GBP, INR, PKR, AED, SAR and more), English and Urdu, dark mode, large text.
-• Private by design: no sign-up, works offline, data is encrypted on your phone. PIN and fingerprint lock.
+WHY PEOPLE USE HISAAB
+• Expense tracker: add spending and income in seconds. Categories are picked for you from what you type.
+• Budget planner: set a monthly budget and category limits. Get alerts at 80% and 100%.
+• Safe to spend today: see a daily spending limit so your money lasts until payday.
+• Split bills: make groups for flatmates, trips or friends. Split equally, by amount, by percent or by item, and see who pays whom.
+• Debt tracker: record money you lent or borrowed, part payments and due dates. Send a friendly reminder on WhatsApp.
+• Bill reminders: rent, internet, phone and utility bills, one day before the due date.
+• Savings goals: travel, a laptop, a wedding, an emergency fund. See how much to save each month.
+• Reports and insights: spending by category, the last 6 months, net worth and simple tips.
+• PDF statement: a bank-style statement with running balance to keep, print or share.
+• Paste bank SMS: copy a bank or mobile wallet message and Hisaab fills in the amount, date and shop.
+• Recurring transactions, transfers between accounts, tags and receipt photos.
+• Zakat calculator with gold or silver nisab, filled from your own balances.
 
-Made for students, salaried people, households, freelancers and shopkeepers.
+MADE FOR EVERYONE
+Students, salaried people, families, freelancers and small business owners. Choose from 28 currencies including USD, EUR, GBP, INR, PKR, AED, SAR, CAD and AUD. Your month can start on your salary day.
+
+PRIVATE BY DESIGN
+• No account and no sign-up
+• Works fully offline
+• Data encrypted on your phone
+• PIN and fingerprint lock, hide balances with one tap
+• Backup file to move to a new phone, CSV export
+
+English and Urdu, dark mode and large text.
+
+Hisaab is free and supported by ads. Start tracking your expenses today and take control of your money.
 
 **Full description (UR)**
 
@@ -41,7 +56,7 @@ Made for students, salaried people, households, freelancers and shopkeepers.
 • سائن اپ کی ضرورت نہیں، آف لائن، ڈیٹا فون پر محفوظ اور انکرپٹڈ۔ PIN اور فنگر پرنٹ لاک۔
 
 **Category:** Finance
-**Tags:** budget, expense tracker, personal finance
+**Tags (pick up to 5 in Play Console):** Budget, Expense tracker, Personal finance, Money manager, Bill splitting
 **Contact email:** required by Play (to be decided)
 **Privacy policy URL:** host `docs/privacy-policy.md` (for example on GitHub Pages) and paste the link.
 
