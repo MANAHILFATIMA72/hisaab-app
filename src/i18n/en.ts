@@ -59,6 +59,7 @@ export const en = {
     whoAreYouHint: 'We will set up categories that fit you. You can change them anytime.',
     currencyTitle: 'Currency and month start',
     currency: 'Currency',
+    currencyHint: 'More currencies in Settings.',
     monthStart: 'My month starts on (salary day)',
     monthStartHint: 'Budgets and reports will run from this day each month.',
     start: 'Start using Hisaab',

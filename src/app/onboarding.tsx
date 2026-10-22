@@ -6,7 +6,6 @@ import { View } from 'react-native';
 import { Spacing } from '@/constants/theme';
 import { seedForProfile } from '@/db/repo';
 import { makeT, type Lang } from '@/i18n';
-import { CURRENCIES } from '@/lib/money';
 import type { ProfileType } from '@/lib/types';
 import { ensurePermission, syncReminders } from '@/services/notifications';
 import { useApp } from '@/state/app';
@@ -21,6 +20,8 @@ const PROFILES: { value: ProfileType; icon: IconName }[] = [
 ];
 
 const START_DAYS = [1, 5, 10, 15, 20, 25, 28];
+// A short list keeps the Start button on screen; every currency is in Settings.
+const POPULAR = ['USD', 'EUR', 'GBP', 'INR', 'PKR', 'AED', 'SAR'];
 
 export default function Onboarding() {
   const { db, t, colors, settings, setSetting, changed } = useApp();
@@ -102,8 +103,12 @@ export default function Onboarding() {
       {step === 2 && (
         <View style={{ gap: Spacing.three }}>
           <Text variant="title">{t('onboarding.currencyTitle')}</Text>
-          <Field label={t('onboarding.currency')}>
-            <Chips options={CURRENCIES.map((c) => ({ value: c, label: c }))} value={currency} onChange={setCurrency} />
+          <Field label={t('onboarding.currency')} hint={t('onboarding.currencyHint')}>
+            <Chips
+              options={[...new Set([settings.currency, ...POPULAR])].map((c) => ({ value: c, label: c }))}
+              value={currency}
+              onChange={setCurrency}
+            />
           </Field>
           <Field label={t('onboarding.monthStart')} hint={t('onboarding.monthStartHint')}>
             <Chips

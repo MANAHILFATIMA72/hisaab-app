@@ -61,6 +61,7 @@ export const ur: Dictionary = {
     whoAreYouHint: 'ہم آپ کے مطابق کیٹیگریز بنا دیں گے۔ آپ بعد میں بدل سکتے ہیں۔',
     currencyTitle: 'کرنسی اور مہینے کا آغاز',
     currency: 'کرنسی',
+    currencyHint: 'باقی کرنسیاں سیٹنگز میں ہیں۔',
     monthStart: 'میرا مہینہ اس تاریخ سے شروع ہوتا ہے (تنخواہ کا دن)',
     monthStartHint: 'بجٹ اور رپورٹس ہر مہینے اسی دن سے چلیں گی۔',
     start: 'حساب شروع کریں',
