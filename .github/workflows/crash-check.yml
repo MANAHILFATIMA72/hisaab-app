@@ -1,12 +1,9 @@
-# Installs a test APK on an Android emulator, opens it and saves the crash log, if any.
+# Builds the app for the emulator (x86_64), opens it on an Android emulator and saves the
+# crash log and a screenshot. Same code and settings as the Test APK, only a different CPU type.
 name: Crash check
 
 on:
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Release tag of the APK to check (e.g. test-5)
-        required: true
 
 jobs:
   check:
@@ -17,10 +14,23 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Download APK
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - run: npx expo prebuild --platform android --no-install
+      - run: ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 --no-daemon
+        working-directory: android
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release download "${{ inputs.tag }}" --repo "$GITHUB_REPOSITORY" --pattern '*.apk' --output app.apk
+          EXPO_PUBLIC_TEST_ADS: '1'
+      - run: cp android/app/build/outputs/apk/release/app-release.apk app.apk
       - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -31,7 +41,7 @@ jobs:
             adb install -r app.apk
             adb logcat -c
             adb shell monkey -p com.manahil.hisaab -c android.intent.category.LAUNCHER 1
-            sleep 40
+            sleep 60
             adb logcat -d > logcat.txt || true
             adb shell pidof com.manahil.hisaab || echo "APP NOT RUNNING" >> logcat.txt
             adb exec-out screencap -p > screen.png || true
@@ -41,7 +51,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: crash-check-${{ inputs.tag }}
+          name: crash-check-${{ github.run_number }}
           path: |
             logcat.txt
             screen.png
