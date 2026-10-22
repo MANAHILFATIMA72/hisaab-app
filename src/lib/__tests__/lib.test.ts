@@ -259,13 +259,13 @@ describe('csv', () => {
 
 describe('sms parsing', () => {
   it('reads a debit', () => {
-    expect(parseSms('Rs.1,250.00 debited from your A/C **1234 at KFC GULBERG on 21-Oct-26. Avl Bal Rs 20,000')).toEqual(
-      { amount: 125000, type: 'expense', merchant: 'KFC GULBERG' },
-    );
+    expect(
+      parseSms('Rs.1,250.00 debited from your A/C **1234 at KFC GULBERG on 21-Oct-26. Avl Bal Rs 20,000'),
+    ).toMatchObject({ amount: 125000, type: 'expense', merchant: 'KFC GULBERG' });
   });
 
   it('reads a wallet credit', () => {
-    expect(parseSms('You have received Rs 5000.00 from ALI KHAN via JazzCash. TID 123')).toEqual({
+    expect(parseSms('You have received Rs 5000.00 from ALI KHAN via JazzCash. TID 123')).toMatchObject({
       amount: 500000,
       type: 'income',
       merchant: 'ALI KHAN',

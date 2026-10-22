@@ -39,6 +39,11 @@ export type Transaction = {
   note: string;
   recurring_id: string | null;
   created_at: number;
+  time: string | null; // 'HH:MM'
+  tags: string; // comma separated, lower case
+  receipt: string | null; // file uri of a receipt photo
+  split_id: string | null; // rows of one purchase split across categories share this
+  group_expense_id: string | null; // my share of a group bill
 };
 
 export type Recurring = {
@@ -102,4 +107,65 @@ export type Bill = {
   amount: number;
   due_day: number;
   active: number;
+};
+
+export type Group = {
+  id: string;
+  name: string;
+  icon: string;
+  archived: number;
+  created_at: number;
+};
+
+export type GroupMember = {
+  id: string;
+  group_id: string;
+  name: string;
+  phone: string;
+  is_me: number;
+  sort: number;
+};
+
+export type GroupExpense = {
+  id: string;
+  group_id: string;
+  title: string;
+  amount: number;
+  paid_by: string;
+  split: string; // JSON SplitInput, kept so the bill can be edited the way it was entered
+  date: ISODate;
+  category_id: string | null;
+  created_at: number;
+};
+
+export type GroupShare = { expense_id: string; member_id: string; amount: number };
+
+export type GroupSettlement = {
+  id: string;
+  group_id: string;
+  from_member: string;
+  to_member: string;
+  amount: number;
+  date: ISODate;
+  created_at: number;
+};
+
+export type GroupRecurring = {
+  id: string;
+  group_id: string;
+  title: string;
+  amount: number;
+  paid_by: string;
+  split: string;
+  category_id: string | null;
+  next_date: ISODate;
+  active: number;
+};
+
+export type EventBudget = {
+  id: string;
+  name: string;
+  tag: string;
+  amount: number;
+  created_at: number;
 };

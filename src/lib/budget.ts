@@ -68,3 +68,73 @@ export function safeToSpend(input: SafeToSpendInput): SafeToSpend {
     basis,
   };
 }
+
+// ---------- Templates and suggestions ----------
+
+/** Category keys counted as needs in the 50/30/20 rule. Everything else is a want. */
+export const NEED_KEYS = new Set([
+  'rent',
+  'hostel_rent',
+  'mess',
+  'groceries',
+  'bills',
+  'transport',
+  'fees',
+  'books',
+  'printing',
+  'health',
+  'internet',
+  'mobile',
+  'kids',
+  'house_help',
+  'laundry',
+  'committee',
+  'staff',
+  'stock',
+  'tools',
+]);
+
+export function isNeed(key: string | null): boolean {
+  return !!key && NEED_KEYS.has(key);
+}
+
+/** 50% needs, 30% wants, 20% savings. The spending budget is needs + wants. */
+export function fiftyThirtyTwenty(income: number) {
+  const needs = Math.round(income * 0.5);
+  const wants = Math.round(income * 0.3);
+  return { needs, wants, savings: income - needs - wants, spending: needs + wants };
+}
+
+/** Rounds up to a friendly number: Rs 100 steps below Rs 5,000, Rs 500 steps above. */
+export function roundUpFriendly(minor: number): number {
+  if (minor <= 0) return 0;
+  const step = minor < 5000_00 ? 100_00 : 500_00;
+  return Math.ceil(minor / step) * step;
+}
+
+/**
+ * Suggested limit per category from what was spent in recent months (FR-28): the average,
+ * rounded up to a friendly number. Months with no spending in a category still count, so a
+ * one-off purchase does not become a monthly limit.
+ */
+export function suggestLimits(history: Map<string, number>[]): Map<string, number> {
+  const out = new Map<string, number>();
+  if (!history.length) return out;
+  const ids = new Set(history.flatMap((h) => [...h.keys()]));
+  for (const id of ids) {
+    const avg = history.reduce((a, h) => a + (h.get(id) ?? 0), 0) / history.length;
+    const limit = roundUpFriendly(avg);
+    if (limit > 0) out.set(id, limit);
+  }
+  return out;
+}
+
+/** Monthly budget from a daily allowance, e.g. Rs 500 a day for a 30 day month = Rs 15,000. */
+export function dailyAllowanceBudget(perDay: number, period: Period): number {
+  return perDay * daysLeftInPeriod(period, period.start);
+}
+
+/** Unused budget carried into the next month (FR-32). Overspending is not carried as a penalty. */
+export function rolloverAmount(previousBudget: number, previousSpent: number): number {
+  return Math.max(0, previousBudget - previousSpent);
+}

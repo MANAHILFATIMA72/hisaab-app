@@ -32,6 +32,24 @@ export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   },
   { key: 'fees', kind: 'expense', icon: 'school', color: '#3B5BDB', profiles: ['student', 'household'] },
   { key: 'books', kind: 'expense', icon: 'book', color: '#4263EB', profiles: ['student'] },
+  // Student life: hostel, canteen, outings with friends
+  { key: 'hostel_rent', kind: 'expense', icon: 'bed', color: '#5C940D', profiles: ['student'] },
+  { key: 'mess', kind: 'expense', icon: 'restaurant', color: '#D9480F', profiles: ['student'] },
+  { key: 'canteen', kind: 'expense', icon: 'cafe', color: '#A0522D', profiles: ['student'] },
+  { key: 'outings', kind: 'expense', icon: 'people-circle', color: '#E64980', profiles: ['student', 'employee'] },
+  { key: 'printing', kind: 'expense', icon: 'print', color: '#5C7CFA', profiles: ['student'] },
+  { key: 'laundry', kind: 'expense', icon: 'water', color: '#22B8CF', profiles: ['student'] },
+  { key: 'personal_care', kind: 'expense', icon: 'cut', color: '#BE4BDB', profiles: ['student', 'employee'] },
+  {
+    key: 'subscriptions',
+    kind: 'expense',
+    icon: 'tv',
+    color: '#7950F2',
+    profiles: ['student', 'employee', 'freelancer'],
+  },
+  { key: 'gifts', kind: 'expense', icon: 'gift', color: '#F06595', profiles: ['student'] },
+  { key: 'trips', kind: 'expense', icon: 'airplane', color: '#1098AD', profiles: ['student', 'employee'] },
+  { key: 'gym', kind: 'expense', icon: 'barbell', color: '#2F9E44', profiles: ['student'] },
   { key: 'kids', kind: 'expense', icon: 'happy', color: '#F76707', profiles: ['household'] },
   { key: 'house_help', kind: 'expense', icon: 'hand-left', color: '#74B816', profiles: ['household'] },
   {
@@ -48,6 +66,10 @@ export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   // Income
   { key: 'salary', kind: 'income', icon: 'wallet', color: '#2F9E44', profiles: ['employee', 'household'] },
   { key: 'pocket_money', kind: 'income', icon: 'cash', color: '#37B24D', profiles: ['student'] },
+  { key: 'scholarship', kind: 'income', icon: 'ribbon', color: '#2B8A3E', profiles: ['student'] },
+  { key: 'part_time', kind: 'income', icon: 'time', color: '#40C057', profiles: ['student'] },
+  { key: 'tuition_income', kind: 'income', icon: 'easel', color: '#51CF66', profiles: ['student'] },
+  { key: 'freelance', kind: 'income', icon: 'laptop', color: '#2F9E44', profiles: ['student'] },
   { key: 'client_payment', kind: 'income', icon: 'card', color: '#2F9E44', profiles: ['freelancer'] },
   { key: 'sales', kind: 'income', icon: 'storefront', color: '#2F9E44', profiles: ['business'] },
   { key: 'household_money', kind: 'income', icon: 'home', color: '#2F9E44', profiles: ['household'] },
@@ -55,8 +77,53 @@ export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   { key: 'other_income', kind: 'income', icon: 'add-circle', color: '#69DB7C' },
 ];
 
+// Students see the categories they use most first.
+const STUDENT_ORDER = [
+  'food',
+  'canteen',
+  'transport',
+  'hostel_rent',
+  'mess',
+  'outings',
+  'mobile',
+  'internet',
+  'books',
+  'printing',
+  'fees',
+  'shopping',
+  'personal_care',
+  'laundry',
+  'subscriptions',
+  'gifts',
+  'trips',
+  'gym',
+  'groceries',
+  'health',
+  'bills',
+  'family',
+  'fun',
+  'charity',
+  'other_expense',
+  'pocket_money',
+  'scholarship',
+  'part_time',
+  'tuition_income',
+  'freelance',
+  'gift',
+  'other_income',
+];
+
+/** Bumped when new default categories are added, so existing users get them on update. */
+export const CATEGORY_SEED_VERSION = 2;
+
 export function categoriesFor(profile: ProfileType): DefaultCategory[] {
-  return DEFAULT_CATEGORIES.filter((c) => !c.profiles || c.profiles.includes(profile));
+  const list = DEFAULT_CATEGORIES.filter((c) => !c.profiles || c.profiles.includes(profile));
+  if (profile !== 'student') return list;
+  const rank = (k: string) => {
+    const i = STUDENT_ORDER.indexOf(k);
+    return i < 0 ? STUDENT_ORDER.length : i;
+  };
+  return [...list].sort((a, b) => rank(a.key) - rank(b.key));
 }
 
 export const DEFAULT_ACCOUNTS: { key: string; type: AccountType; profiles?: ProfileType[] }[] = [
@@ -112,6 +179,13 @@ export const CATEGORY_ICONS = [
   'game-controller',
   'musical-notes',
   'repeat',
+  'bed',
+  'print',
+  'tv',
+  'barbell',
+  'ribbon',
+  'easel',
+  'people-circle',
   'ellipsis-horizontal',
 ] as const;
 

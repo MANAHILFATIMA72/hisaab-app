@@ -21,7 +21,22 @@ export function TxRow({
   const title = isTransfer
     ? t('tx.transferTo', { name: accounts.get(tx.to_account_id ?? '')?.name ?? '' })
     : categoryName(cat, t);
-  const subtitle = [date(tx.date), accounts.get(tx.account_id)?.name, tx.note].filter(Boolean).join(' · ');
+  const subtitle = [
+    tx.time ? `${date(tx.date)} ${tx.time}` : date(tx.date),
+    accounts.get(tx.account_id)?.name,
+    tx.note,
+    tx.group_expense_id ? t('tx.groupShare') : null,
+    tx.split_id ? t('tx.splitPart') : null,
+    tx.receipt ? '📎' : null,
+    tx.tags
+      ? tx.tags
+          .split(',')
+          .map((x) => `#${x}`)
+          .join(' ')
+      : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
   const color = tx.type === 'income' ? colors.income : tx.type === 'expense' ? colors.expense : colors.textSecondary;
   return (
     <ListRow

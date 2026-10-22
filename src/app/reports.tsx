@@ -9,7 +9,7 @@ import { fromISODate, nextPeriod, previousPeriod, type Period } from '@/lib/date
 import { formatMoney } from '@/lib/money';
 import { byCategory, inPeriod, insights, percentChange, summarize, type Insight } from '@/lib/reports';
 import { totals as udhaarTotals, withBalances } from '@/lib/udhaar';
-import { shareTransactionsCsv } from '@/services/data';
+import { shareTransactionsCsv, sharePdfReport } from '@/services/data';
 import { useApp, useLoad } from '@/state/app';
 import { categoryMap, categoryName } from '@/state/labels';
 import { Bars, Donut, Legend, type Slice } from '@/ui/charts';
@@ -232,6 +232,19 @@ export default function Reports() {
             icon="download-outline"
             title={t('reports.exportCsv')}
             onPress={() => shareTransactionsCsv(db, t, period.start, period.end)}
+          />
+          <Button
+            kind="secondary"
+            icon="document-text-outline"
+            title={t('reports.exportPdf')}
+            onPress={() =>
+              sharePdfReport(
+                db,
+                { t, money: (m) => formatMoney(m, settings.currency), date, rtl: isRTL },
+                period.start,
+                period.end,
+              )
+            }
           />
         </>
       )}

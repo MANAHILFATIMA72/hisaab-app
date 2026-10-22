@@ -74,6 +74,14 @@ export async function syncReminders(db: SQLiteDatabase, s: Settings) {
     });
   }
 
+  if (s.weeklySummary) {
+    // Sunday evening (weekday 1 = Sunday).
+    await Notifications.scheduleNotificationAsync({
+      content: { title: t('notif.weeklyTitle'), body: t('notif.weeklyBody') },
+      trigger: { type: T.WEEKLY, weekday: 1, hour: 19, minute: 0, channelId: CHANNEL },
+    });
+  }
+
   if (s.billReminders) {
     for (const b of await listBills(db)) {
       if (!b.active) continue;

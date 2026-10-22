@@ -25,6 +25,10 @@ export type Settings = {
   udhaarReminders: boolean;
   billReminders: boolean;
   monthlySummary: boolean;
+  weeklySummary: boolean;
+  budgetRollover: boolean;
+  catSeed: string; // last CATEGORY_SEED_VERSION applied
+  ruleIncome: string; // monthly income for the 50/30/20 check, in minor units, '' when not used
   zakatGoldPrice: string;
   zakatSilverPrice: string;
 };
@@ -45,6 +49,10 @@ const DEFAULTS: Settings = {
   udhaarReminders: true,
   billReminders: true,
   monthlySummary: true,
+  weeklySummary: true,
+  budgetRollover: false,
+  catSeed: '',
+  ruleIncome: '',
   zakatGoldPrice: '',
   zakatSilverPrice: '',
 };

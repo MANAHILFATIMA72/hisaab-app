@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { Spacing } from '@/constants/theme';
+import { listGroups } from '@/db/groups-repo';
 import {
   listAccounts,
   listBills,
@@ -13,13 +14,26 @@ import {
   listUdhaar,
   totalsInRange,
 } from '@/db/repo';
-import { budgetStatus, progress, safeToSpend } from '@/lib/budget';
-import { today } from '@/lib/dates';
+import { budgetStatus, progress, rolloverAmount, safeToSpend } from '@/lib/budget';
+import { previousPeriod, today } from '@/lib/dates';
+import { myTotals } from '@/lib/groups';
 import { upcomingBillsTotal, upcomingTotal } from '@/lib/recurring';
 import { totals as udhaarTotals, withBalances } from '@/lib/udhaar';
 import { useApp, useLoad } from '@/state/app';
 import { categoryMap } from '@/state/labels';
-import { Button, Card, Divider, Empty, Fab, ProgressBar, Row, Screen, SectionTitle, Text } from '@/ui/kit';
+import {
+  Button,
+  Card,
+  Divider,
+  Empty,
+  Fab,
+  ProgressBar,
+  Row,
+  Screen,
+  SectionTitle,
+  Text,
+  type IconName,
+} from '@/ui/kit';
 import { TxRow } from '@/ui/tx-row';
 
 export default function Home() {
@@ -28,7 +42,7 @@ export default function Home() {
   const data = useLoad(
     async (db) => {
       const now = today();
-      const [accounts, budgets, monthTotals, todayTotals, recurring, bills, udhaar, recent, categories] =
+      const [accounts, budgets, monthTotals, todayTotals, recurring, bills, udhaar, recent, categories, groups] =
         await Promise.all([
           listAccounts(db),
           listBudgets(db),
@@ -39,8 +53,14 @@ export default function Home() {
           listUdhaar(db),
           listTransactions(db, { limit: 6 }),
           listCategories(db, true),
+          listGroups(db),
         ]);
-      const overall = budgets.find((b) => b.category_id === null)?.amount ?? 0;
+      const base = budgets.find((b) => b.category_id === null)?.amount ?? 0;
+      let overall = base;
+      if (settings.budgetRollover && base) {
+        const prev = previousPeriod(period, settings.monthStartDay);
+        overall += rolloverAmount(base, (await totalsInRange(db, prev.start, prev.end)).expense);
+      }
       const upcomingRecurring = upcomingTotal(
         recurring.filter((r) => r.active && r.type === 'expense'),
         now,
@@ -60,13 +80,18 @@ export default function Home() {
           upcoming,
           spentToday: todayTotals.expense,
         }),
-        udhaar: udhaarTotals(withBalances(udhaar.items, udhaar.payments)),
+        udhaar: (() => {
+          const u = udhaarTotals(withBalances(udhaar.items, udhaar.payments));
+          const g = myTotals(groups.map((x) => x.myNet));
+          return { toReceive: u.toReceive + g.toReceive, toPay: u.toPay + g.toPay };
+        })(),
+        groups,
         recent,
         categories: categoryMap(categories),
         accounts: new Map(accounts.map((a) => [a.id, a])),
       };
     },
-    [period.start, period.end],
+    [period.start, period.end, settings.budgetRollover, settings.monthStartDay],
   );
 
   if (!data) return <Screen>{null}</Screen>;
@@ -95,6 +120,27 @@ export default function Home() {
             </Text>
           </Pressable>
         </Card>
+
+        <Row>
+          <QuickAction icon="remove-circle" label={t('home.quickExpense')} onPress={() => router.push('/tx/new')} />
+          <QuickAction
+            icon="people"
+            label={t('home.quickSplit')}
+            onPress={() =>
+              data.groups.length === 1
+                ? router.push(`/groups/bill/new?group=${data.groups[0].group.id}`)
+                : data.groups.length
+                  ? router.push({ pathname: '/udhaar', params: { view: 'groups' } })
+                  : router.push('/groups/edit/new')
+            }
+          />
+          <QuickAction
+            icon="swap-vertical"
+            label={t('home.quickUdhaar')}
+            onPress={() => router.push('/udhaar/edit/new')}
+          />
+          <QuickAction icon="clipboard" label={t('home.quickSms')} onPress={() => router.push('/tx/new?sms=1')} />
+        </Row>
 
         <Card>
           <Text variant="label" muted>
@@ -158,6 +204,9 @@ export default function Home() {
 
         {(data.udhaar.toReceive > 0 || data.udhaar.toPay > 0) && (
           <Card onPress={() => router.push('/udhaar')}>
+            <Text variant="label" muted>
+              {t('home.lenaDena')}
+            </Text>
             <Row style={{ justifyContent: 'space-between' }}>
               <Stat
                 label={t('home.toReceive')}
@@ -198,6 +247,31 @@ export default function Home() {
       </Screen>
       <Fab label={t('tx.add')} onPress={() => router.push('/tx/new')} />
     </View>
+  );
+}
+
+function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; onPress: () => void }) {
+  const { colors } = useApp();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: 4, opacity: pressed ? 0.6 : 1 })}>
+      <View
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 24,
+          backgroundColor: colors.primarySoft,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <Ionicons name={icon} size={24} color={colors.primary} />
+      </View>
+      <Text variant="caption" center numberOfLines={2}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 

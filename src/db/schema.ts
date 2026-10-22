@@ -108,6 +108,83 @@ const MIGRATIONS: string[] = [
   -- Remembers which budget alerts already fired in a period, so each fires once.
   CREATE TABLE alerts_sent (key TEXT PRIMARY KEY NOT NULL);
   `,
+  // v1.1: student features. Time, tags, receipts and split purchases on transactions; group bills; event budgets.
+  `
+  ALTER TABLE transactions ADD COLUMN time TEXT;
+  ALTER TABLE transactions ADD COLUMN tags TEXT NOT NULL DEFAULT '';
+  ALTER TABLE transactions ADD COLUMN receipt TEXT;
+  ALTER TABLE transactions ADD COLUMN split_id TEXT;
+  ALTER TABLE transactions ADD COLUMN group_expense_id TEXT;
+  CREATE INDEX tx_split ON transactions(split_id);
+  CREATE INDEX tx_group_expense ON transactions(group_expense_id);
+
+  CREATE TABLE bill_groups (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    icon TEXT NOT NULL DEFAULT 'people',
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE group_members (
+    id TEXT PRIMARY KEY NOT NULL,
+    group_id TEXT NOT NULL REFERENCES bill_groups(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL DEFAULT '',
+    is_me INTEGER NOT NULL DEFAULT 0,
+    sort INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE group_expenses (
+    id TEXT PRIMARY KEY NOT NULL,
+    group_id TEXT NOT NULL REFERENCES bill_groups(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    paid_by TEXT NOT NULL,
+    split TEXT NOT NULL,
+    date TEXT NOT NULL,
+    category_id TEXT,
+    created_at INTEGER NOT NULL
+  );
+  CREATE INDEX gexp_group ON group_expenses(group_id);
+
+  CREATE TABLE group_shares (
+    expense_id TEXT NOT NULL REFERENCES group_expenses(id) ON DELETE CASCADE,
+    member_id TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    PRIMARY KEY (expense_id, member_id)
+  );
+
+  CREATE TABLE group_settlements (
+    id TEXT PRIMARY KEY NOT NULL,
+    group_id TEXT NOT NULL REFERENCES bill_groups(id) ON DELETE CASCADE,
+    from_member TEXT NOT NULL,
+    to_member TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE group_recurring (
+    id TEXT PRIMARY KEY NOT NULL,
+    group_id TEXT NOT NULL REFERENCES bill_groups(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    paid_by TEXT NOT NULL,
+    split TEXT NOT NULL,
+    category_id TEXT,
+    next_date TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1
+  );
+
+  CREATE TABLE event_budgets (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    tag TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+  `,
 ];
 
 /** Tables in the order they can be safely restored (parents before children). */
@@ -124,6 +201,13 @@ export const DATA_TABLES = [
   'goal_contributions',
   'bills',
   'alerts_sent',
+  'bill_groups',
+  'group_members',
+  'group_expenses',
+  'group_shares',
+  'group_settlements',
+  'group_recurring',
+  'event_budgets',
 ] as const;
 
 export const SCHEMA_VERSION = MIGRATIONS.length;

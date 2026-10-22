@@ -8,6 +8,7 @@ import type {
   Bill,
   Budget,
   Category,
+  EventBudget,
   Goal,
   GoalContribution,
   ProfileType,
@@ -199,6 +200,7 @@ export type TxFilter = {
   categoryId?: string;
   accountId?: string;
   search?: string;
+  tag?: string;
   minAmount?: number;
   maxAmount?: number;
   limit?: number;
@@ -236,10 +238,14 @@ export async function listTransactions(db: SQLiteDatabase, f: TxFilter = {}): Pr
     where.push('t.amount <= ?');
     params.push(f.maxAmount);
   }
+  if (f.tag) {
+    where.push(`(',' || t.tags || ',') LIKE ?`);
+    params.push(`%,${f.tag},%`);
+  }
   if (f.search?.trim()) {
-    where.push(`(t.note LIKE ? OR c.name LIKE ? OR CAST(t.amount / 100 AS TEXT) LIKE ?)`);
-    const q = `%${f.search.trim()}%`;
-    params.push(q, q, q);
+    where.push(`(t.note LIKE ? OR c.name LIKE ? OR t.tags LIKE ? OR CAST(t.amount / 100 AS TEXT) LIKE ?)`);
+    const q = `%${f.search.trim().replace(/^#/, '')}%`;
+    params.push(q, q, q, q);
   }
   const sql = `SELECT t.* FROM transactions t LEFT JOIN categories c ON c.id = t.category_id
     ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
@@ -251,16 +257,21 @@ export async function getTransaction(db: SQLiteDatabase, id: string) {
   return db.getFirstAsync<Transaction>('SELECT * FROM transactions WHERE id = ?', id);
 }
 
-export async function saveTransaction(
-  db: SQLiteDatabase,
-  t: Omit<Transaction, 'created_at'> & { created_at?: number },
-) {
+export type TransactionInput = Omit<
+  Transaction,
+  'created_at' | 'time' | 'tags' | 'receipt' | 'split_id' | 'group_expense_id'
+> &
+  Partial<Pick<Transaction, 'created_at' | 'time' | 'tags' | 'receipt' | 'split_id' | 'group_expense_id'>>;
+
+export async function saveTransaction(db: SQLiteDatabase, t: TransactionInput) {
   await db.runAsync(
-    `INSERT INTO transactions (id, type, amount, account_id, to_account_id, category_id, date, note, recurring_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO transactions (id, type, amount, account_id, to_account_id, category_id, date, note, recurring_id,
+       created_at, time, tags, receipt, split_id, group_expense_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET type = excluded.type, amount = excluded.amount, account_id = excluded.account_id,
        to_account_id = excluded.to_account_id, category_id = excluded.category_id, date = excluded.date,
-       note = excluded.note`,
+       note = excluded.note, time = excluded.time, tags = excluded.tags, receipt = excluded.receipt,
+       split_id = excluded.split_id`,
     t.id,
     t.type,
     t.amount,
@@ -271,7 +282,36 @@ export async function saveTransaction(
     t.note,
     t.recurring_id,
     t.created_at ?? Date.now(),
+    t.time ?? null,
+    normalizeTags(t.tags ?? ''),
+    t.receipt ?? null,
+    t.split_id ?? null,
+    t.group_expense_id ?? null,
   );
+}
+
+/** Tags are stored lower case, comma separated, without '#'. */
+export function normalizeTags(input: string): string {
+  const tags = input
+    .split(/[,#\s]+/)
+    .map((x) => x.trim().toLowerCase())
+    .filter(Boolean);
+  return [...new Set(tags)].join(',');
+}
+
+export async function listTags(db: SQLiteDatabase): Promise<string[]> {
+  const rows = await db.getAllAsync<{ tags: string }>("SELECT DISTINCT tags FROM transactions WHERE tags != ''");
+  return [...new Set(rows.flatMap((r) => r.tags.split(',')))].filter(Boolean).sort();
+}
+
+/** All rows of a purchase split across categories (FR-19). */
+export async function getSplitParts(db: SQLiteDatabase, splitId: string) {
+  return db.getAllAsync<Transaction>('SELECT * FROM transactions WHERE split_id = ? ORDER BY created_at', splitId);
+}
+
+export async function deleteSplitParts(db: SQLiteDatabase, splitId: string, keep: string[] = []) {
+  const parts = await getSplitParts(db, splitId);
+  for (const p of parts) if (!keep.includes(p.id)) await db.runAsync('DELETE FROM transactions WHERE id = ?', p.id);
 }
 
 export async function deleteTransaction(db: SQLiteDatabase, id: string) {
@@ -491,6 +531,34 @@ export async function saveBill(db: SQLiteDatabase, b: Bill) {
 
 export async function deleteBill(db: SQLiteDatabase, id: string) {
   await db.runAsync('DELETE FROM bills WHERE id = ?', id);
+}
+
+// ---------- Event budgets (Eid, trip, shaadi), tracked by tag ----------
+
+export type EventBudgetWithSpent = EventBudget & { spent: number };
+
+export async function listEventBudgets(db: SQLiteDatabase): Promise<EventBudgetWithSpent[]> {
+  return db.getAllAsync<EventBudgetWithSpent>(
+    `SELECT e.*, COALESCE((SELECT SUM(t.amount) FROM transactions t
+       WHERE t.type = 'expense' AND (',' || t.tags || ',') LIKE '%,' || e.tag || ',%'), 0) AS spent
+     FROM event_budgets e ORDER BY e.created_at DESC`,
+  );
+}
+
+export async function saveEventBudget(db: SQLiteDatabase, e: Omit<EventBudget, 'created_at'>) {
+  await db.runAsync(
+    `INSERT INTO event_budgets (id, name, tag, amount, created_at) VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET name = excluded.name, tag = excluded.tag, amount = excluded.amount`,
+    e.id,
+    e.name.trim(),
+    normalizeTags(e.tag),
+    e.amount,
+    Date.now(),
+  );
+}
+
+export async function deleteEventBudget(db: SQLiteDatabase, id: string) {
+  await db.runAsync('DELETE FROM event_budgets WHERE id = ?', id);
 }
 
 // ---------- Backup, restore, wipe ----------

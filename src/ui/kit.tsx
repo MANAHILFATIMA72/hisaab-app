@@ -344,6 +344,49 @@ export function Chips<T extends string>({
   );
 }
 
+/** Like Chips, but any number can be selected. */
+export function MultiChips({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: string; label: string }[];
+  value: string[];
+  onChange: (v: string[]) => void;
+}) {
+  const { colors } = useApp();
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two }}>
+      {options.map((o) => {
+        const selected = value.includes(o.value);
+        return (
+          <Pressable
+            key={o.value}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: selected }}
+            onPress={() => onChange(selected ? value.filter((v) => v !== o.value) : [...value, o.value])}
+            style={[
+              styles.chip,
+              {
+                backgroundColor: selected ? colors.primary : colors.card,
+                borderColor: selected ? colors.primary : colors.border,
+              },
+            ]}>
+            <Ionicons
+              name={selected ? 'checkmark-circle' : 'ellipse-outline'}
+              size={16}
+              color={selected ? colors.onPrimary : colors.textSecondary}
+            />
+            <Text variant="label" color={selected ? colors.onPrimary : colors.text}>
+              {o.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 export function Segmented<T extends string>({
   options,
   value,
@@ -432,6 +475,52 @@ export function DateField({
           display="inline"
           onValueChange={(_e, d) => d && onChange(toISODate(d))}
         />
+      )}
+    </View>
+  );
+}
+
+/** Optional time of day as 'HH:MM'. */
+export function TimeField({ value, onChange }: { value: string | null; onChange: (v: string | null) => void }) {
+  const { colors, t } = useApp();
+  const [showIOS, setShowIOS] = useState(false);
+  const current = new Date();
+  if (value) current.setHours(Number(value.slice(0, 2)), Number(value.slice(3, 5)), 0, 0);
+  const fmt = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  const open = () => {
+    if (Platform.OS === 'android') {
+      DateTimePickerAndroid.open({
+        value: current,
+        mode: 'time',
+        onValueChange: (_e, d) => d && onChange(fmt(d)),
+      });
+    } else {
+      setShowIOS((s) => !s);
+    }
+  };
+  if (Platform.OS === 'web') {
+    return (
+      <Input
+        defaultValue={value ?? ''}
+        placeholder="HH:MM"
+        onChangeText={(v) => {
+          if (/^\d{2}:\d{2}$/.test(v)) onChange(v);
+          else if (!v) onChange(null);
+        }}
+      />
+    );
+  }
+  return (
+    <View style={{ gap: Spacing.two }}>
+      <Row>
+        <Pressable onPress={open} style={[styles.chip, { borderColor: colors.border, backgroundColor: colors.card }]}>
+          <Ionicons name="time-outline" size={16} color={colors.primary} />
+          <Text variant="label">{value ?? t('tx.addTime')}</Text>
+        </Pressable>
+        {value && <IconButton icon="close-circle" label={t('common.clear')} onPress={() => onChange(null)} />}
+      </Row>
+      {showIOS && Platform.OS === 'ios' && (
+        <DateTimePicker value={current} mode="time" onValueChange={(_e, d) => d && onChange(fmt(d))} />
       )}
     </View>
   );

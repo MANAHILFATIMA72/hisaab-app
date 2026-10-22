@@ -226,6 +226,12 @@ export default function SettingsScreen() {
           value={settings.monthlySummary}
           onChange={(v) => setReminderSetting('monthlySummary', v)}
         />
+        <Divider />
+        <ToggleRow
+          title={t('settings.weeklySummary')}
+          value={settings.weeklySummary}
+          onChange={(v) => setReminderSetting('weeklySummary', v)}
+        />
       </Card>
 
       <SectionTitle>{t('settings.data')}</SectionTitle>

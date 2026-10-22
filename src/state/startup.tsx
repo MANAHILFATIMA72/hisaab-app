@@ -2,7 +2,9 @@ import { router, useSegments } from 'expo-router';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AppState, View } from 'react-native';
 
-import { processRecurring } from '@/db/repo';
+import { CATEGORY_SEED_VERSION } from '@/db/defaults';
+import { processGroupRecurring } from '@/db/groups-repo';
+import { processRecurring, seedForProfile } from '@/db/repo';
 import { today } from '@/lib/dates';
 import { syncReminders } from '@/services/notifications';
 import { LockScreen } from '@/ui/lock-screen';
@@ -12,7 +14,7 @@ import { useApp } from './app';
 const RELOCK_AFTER_MS = 30_000;
 
 export function StartupGate({ children }: { children: ReactNode }) {
-  const { db, settings, changed } = useApp();
+  const { db, settings, changed, setSetting, t } = useApp();
   const segments = useSegments();
   const [locked, setLocked] = useState(settings.lockEnabled);
   const backgroundedAt = useRef<number | null>(null);
@@ -27,7 +29,12 @@ export function StartupGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!settings.onboarded) return;
     const run = async () => {
-      const added = await processRecurring(db, today());
+      // Existing users get categories added in app updates (existing ones are left alone).
+      if (settings.catSeed !== String(CATEGORY_SEED_VERSION)) {
+        await seedForProfile(db, settings.profile, (key) => t(key as 'acc_cash'));
+        await setSetting('catSeed', String(CATEGORY_SEED_VERSION));
+      }
+      const added = (await processRecurring(db, today())) + (await processGroupRecurring(db, today()));
       if (added) changed();
       await syncReminders(db, settings);
     };
@@ -46,7 +53,7 @@ export function StartupGate({ children }: { children: ReactNode }) {
       }
     });
     return () => sub.remove();
-  }, [db, settings, changed]);
+  }, [db, settings, changed, setSetting, t]);
 
   return (
     <View style={{ flex: 1 }}>

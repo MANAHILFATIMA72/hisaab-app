@@ -5,7 +5,7 @@ import { FlatList, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Spacing } from '@/constants/theme';
-import { listAccounts, listCategories, listTransactions, type TxFilter } from '@/db/repo';
+import { listAccounts, listCategories, listTags, listTransactions, type TxFilter } from '@/db/repo';
 import { previousPeriod } from '@/lib/dates';
 import { parseAmount } from '@/lib/money';
 import { summarize } from '@/lib/reports';
@@ -26,6 +26,7 @@ export default function History() {
   const [type, setType] = useState<TxType | 'all'>('all');
   const [categoryId, setCategoryId] = useState<string>('all');
   const [accountId, setAccountId] = useState<string>('all');
+  const [tag, setTag] = useState<string>('all');
   const [minAmount, setMinAmount] = useState('');
   const [maxAmount, setMaxAmount] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -39,20 +40,23 @@ export default function History() {
       categoryId: categoryId === 'all' ? undefined : categoryId,
       accountId: accountId === 'all' ? undefined : accountId,
       search,
+      tag: tag === 'all' ? undefined : tag,
       minAmount: parseAmount(minAmount) ?? undefined,
       maxAmount: parseAmount(maxAmount) ?? undefined,
     };
-  }, [range, period, settings.monthStartDay, type, categoryId, accountId, search, minAmount, maxAmount]);
+  }, [range, period, settings.monthStartDay, type, categoryId, accountId, search, tag, minAmount, maxAmount]);
 
   const data = useLoad(
     async (db) => {
-      const [txs, categories, accounts] = await Promise.all([
+      const [txs, categories, accounts, tags] = await Promise.all([
         listTransactions(db, filter),
         listCategories(db, true),
         listAccounts(db, true),
+        listTags(db),
       ]);
       return {
         txs,
+        tags,
         categories,
         catMap: categoryMap(categories),
         accounts,
@@ -136,6 +140,17 @@ export default function History() {
               value={accountId}
               onChange={setAccountId}
             />
+            {data.tags.length > 0 && (
+              <Chips
+                wrap={false}
+                options={[
+                  { value: 'all', label: t('tx.allTags') },
+                  ...data.tags.map((x) => ({ value: x, label: `#${x}` })),
+                ]}
+                value={tag}
+                onChange={setTag}
+              />
+            )}
             <Row>
               <View style={{ flex: 1 }}>
                 <Input
