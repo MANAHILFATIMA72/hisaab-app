@@ -18,7 +18,10 @@ export function AdBanner() {
       <BannerAd
         unitId={bannerUnitId()}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        onAdFailedToLoad={() => setFailed(true)}
+        onAdFailedToLoad={(e) => {
+          console.log('[ads] banner failed', String(e));
+          setFailed(true);
+        }}
       />
     </View>
   );
@@ -35,7 +38,14 @@ export function PageEndAd() {
       <Text variant="caption" muted>
         {t('common.ad')}
       </Text>
-      <BannerAd unitId={bannerUnitId()} size={BannerAdSize.MEDIUM_RECTANGLE} onAdFailedToLoad={() => setFailed(true)} />
+      <BannerAd
+        unitId={bannerUnitId()}
+        size={BannerAdSize.MEDIUM_RECTANGLE}
+        onAdFailedToLoad={(e) => {
+          console.log('[ads] banner failed', String(e));
+          setFailed(true);
+        }}
+      />
     </View>
   );
 }

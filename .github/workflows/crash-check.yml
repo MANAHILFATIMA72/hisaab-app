@@ -41,13 +41,17 @@ jobs:
             adb install -r app.apk
             adb logcat -c
             adb shell monkey -p com.manahil.hisaab -c android.intent.category.LAUNCHER 1
-            sleep 60
+            sleep 25
+            bash scripts/emulator-tap.sh "Next" "Student" "Next" "Start using Hisaab" "Allow"
+            sleep 40
             adb logcat -d > logcat.txt || true
             adb shell pidof com.manahil.hisaab || echo "APP NOT RUNNING" >> logcat.txt
             adb exec-out screencap -p > screen.png || true
       - name: Crash summary
         if: always()
-        run: grep -n -A40 "FATAL EXCEPTION\|AndroidRuntime\|ReactNativeJS\|APP NOT RUNNING" logcat.txt | head -200 || true
+        run: |
+          grep -n -A30 "FATAL EXCEPTION" logcat.txt | head -80 || true
+          grep -n "\[ads\]\|\[tap\]\|APP NOT RUNNING\|Ads    \|UserMessagingPlatform" logcat.txt | head -80 || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:

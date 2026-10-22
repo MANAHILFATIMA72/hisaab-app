@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 
 import { applyEncryptionKey } from '@/db/key';
 import { migrate } from '@/db/schema';
+import { prepareAds } from '@/services/ads';
 import { AppProvider, useApp } from '@/state/app';
 import { StartupGate } from '@/state/startup';
 
@@ -20,6 +21,7 @@ function Navigator() {
   const { colors, isDark, t } = useApp();
   useEffect(() => {
     SplashScreen.hideAsync();
+    prepareAds();
   }, []);
   const base = isDark ? DarkTheme : DefaultTheme;
   return (

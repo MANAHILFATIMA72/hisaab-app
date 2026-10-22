@@ -4,6 +4,7 @@ import mobileAds, {
   AdsConsent,
   InterstitialAd,
   AdsConsentPrivacyOptionsRequirementStatus,
+  AdsConsentStatus,
   MaxAdContentRating,
   TestIds,
 } from 'react-native-google-mobile-ads';
@@ -36,22 +37,35 @@ const interstitialUnitId = () => (testing || !AD_UNITS.interstitial ? TestIds.IN
 export function prepareAds() {
   if (!ADS_ENABLED) return Promise.resolve();
   started ??= (async () => {
+    // Consent first. If the consent service fails (no internet, AdMob privacy message not set up),
+    // fall back to what it last knew; outside Europe that normally still allows ads.
+    let canRequestAds = true;
     try {
       const info = await AdsConsent.gatherConsent();
+      canRequestAds = info.canRequestAds;
       set({
         privacyOptions: info.privacyOptionsRequirementStatus === AdsConsentPrivacyOptionsRequirementStatus.REQUIRED,
       });
-      if (!info.canRequestAds) return;
+      console.log('[ads] consent', info.status, 'canRequestAds', info.canRequestAds);
+    } catch (e) {
+      console.log('[ads] consent failed', String(e));
+      const info = await AdsConsent.getConsentInfo().catch(() => null);
+      if (info && info.status === AdsConsentStatus.REQUIRED) canRequestAds = false;
+    }
+    if (!canRequestAds) return;
+    try {
       await mobileAds().setRequestConfiguration({
         maxAdContentRating: MaxAdContentRating.PG,
         tagForChildDirectedTreatment: false,
         tagForUnderAgeOfConsent: false,
       });
       await mobileAds().initialize();
+      console.log('[ads] ready, test ads:', testing);
       set({ ready: true });
       loadInterstitial();
-    } catch {
-      // No ads is fine: the app works the same without them.
+    } catch (e) {
+      // No ads is fine: the app works the same without them. Try again next time.
+      console.log('[ads] start failed', String(e));
       started = null;
     }
   })();
